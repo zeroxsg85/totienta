@@ -1,0 +1,232 @@
+/* Tree styles*/
+.list-tree {
+  margin-top: 68px;
+  --tree-clr: #af8600;
+  --tree-font-size: 1rem;
+  --tree-item-height: 2;
+  --tree-offset: 1rem;
+  --tree-thickness: 2px;
+  --tree-style: solid;
+}
+
+.list-tree ul {
+  display: grid;
+  list-style: none;
+  font-size: var(--tree-font-size);
+}
+
+.list-tree li {
+  line-height: var(--tree-item-height);
+  padding-inline-start: var(--tree-offset);
+  border-left: var(--tree-thickness) var(--tree-style) var(--tree-clr);
+  position: relative;
+  text-indent: 0.5rem;
+}
+
+.list-tree li:last-child {
+  border-color: transparent;
+}
+
+.list-tree li::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--tree-item-height) / 2 * -0.7 * var(--tree-font-size) + var(--tree-thickness));
+  left: calc(var(--tree-thickness) * -1);
+  width: calc(var(--tree-offset) + var(--tree-thickness) * 2);
+  height: calc(var(--tree-item-height) * var(--tree-font-size));
+  border-left: var(--tree-thickness) var(--tree-style) var(--tree-clr);
+  border-bottom: var(--tree-thickness) var(--tree-style) var(--tree-clr);
+}
+
+.list-tree li::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--tree-clr);
+  top: calc(var(--tree-item-height) / 2 * 1.3rem);
+  left: var(--tree-offset);
+  translate: calc(var(--tree-thickness) * -1) calc(var(--tree-thickness) * -1);
+}
+
+/* General styling */
+*,
+::before,
+::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --clr-bg: #ffffff;
+  --clr-primary: #f5f5f5;
+  --clr-secondary: #075985;
+}
+
+html {
+  background-color: var(--clr-bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.add-member-icon {
+  cursor: pointer;
+  color: #007bff;
+  font-size: 14px;
+  margin-left: 8px;
+  transition: color 0.3s ease-in-out;
+}
+
+.add-member-icon:hover {
+  color: #0056b3;
+}
+
+/* Avatar container */
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 3px;
+  right: 5px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-indicator.alive {
+  background-color: #28a745;
+}
+
+.status-indicator.deceased {
+  background-color: #000;
+}
+
+.viewCode {
+  position: relative;
+  padding-top: 20px;
+  left: 5px;
+  bottom: 5px;
+  z-index: 99;
+}
+
+.navbar-nav .nav-item.active .nav-link {
+  font-weight: bold;
+  color: #af8600 !important;
+  border-bottom: 2px solid #af8600;
+}
+
+.container-fluid {
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
+
+/* Member name - override default span styles */
+.list-tree li .member-name {
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  opacity: 1;
+}
+
+.list-tree li .member-name.deceased {
+  font-weight: normal;
+  color: black !important;
+}
+
+/* ===== TOOLBAR: Search + Expand ===== */
+.tree-toolbar {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tree-toolbar .search-box {
+  max-width: 300px;
+}
+
+/* ===== COLLAPSE BUTTON ===== */
+.collapse-btn {
+  cursor: pointer;
+  margin-right: 5px;
+  color: #af8600;
+  font-size: 12px;
+  width: 16px;
+  display: inline-block;
+  text-align: center;
+}
+
+.collapse-btn:hover {
+  color: #d4a600;
+}
+
+/* ===== SEARCH HIGHLIGHT ===== */
+.member-name.highlighted {
+  background-color: #fff3cd;
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px #ffc107;
+}
+
+/* ===== Adjust tree margin for toolbar ===== */
+.list-tree {
+  margin-top: 120px !important;
+}
+
+/* ===== TREE STATS ===== */
+.tree-stats {
+  position: fixed;
+  top: 114px;
+  background-color: #ddd;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 99;
+  padding: 6;
+}
+
+.tree-stats span {
+  white-space: nowrap;
+}
+
+.tree-stats strong {
+  color: #af8600;
+}
+
+/* Điều chỉnh lại margin của list-tree vì có thêm stats */
+.list-tree {
+  margin-top: 160px !important;
+}
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f0f2f5, #e4e7eb);
+}
+
+.auth-card {
+  width: 380px;
+  background: #fff;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
