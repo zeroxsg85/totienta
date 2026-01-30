@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -9,7 +10,7 @@ import InputWithIcon from '@/components/InputWithIcon';
 import API from '@/lib/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-export default function ResetPasswordPage(): JSX.Element {
+function ResetPasswordForm(): JSX.Element {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -49,38 +50,48 @@ export default function ResetPasswordPage(): JSX.Element {
     };
 
     return (
+        <div className="auth-card">
+            <h4 className="text-center mb-4">
+                <FontAwesomeIcon icon={faUserInjured} /> Đặt lại mật khẩu
+            </h4>
+
+            <InputWithIcon
+                type="password"
+                icon={faLock}
+                placeholder="Mật khẩu mới"
+                name="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                disabled={loading}
+            />
+
+            <button
+                className="btn btn-primary w-100"
+                onClick={handleSubmit}
+                disabled={loading}
+            >
+                {loading ? (
+                    <>
+                        <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                        />
+                        Đang xử lý...
+                    </>
+                ) : (
+                    'Xác nhận'
+                )}
+            </button>
+        </div>
+    );
+}
+
+export default function ResetPasswordPage(): JSX.Element {
+    return (
         <div className="auth-wrapper">
-            <div className="auth-card">
-                <h4 className="text-center mb-4"><FontAwesomeIcon icon={faUserInjured} /> Đặt lại mật khẩu</h4>
-
-                <InputWithIcon
-                    type="password"
-                    icon={faLock}
-                    placeholder="Mật khẩu mới"
-                    name="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    disabled={loading}
-                />
-
-                <button
-                    className="btn btn-primary w-100"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <span
-                                className="spinner-border spinner-border-sm me-2"
-                                role="status"
-                            />
-                            Đang xử lý...
-                        </>
-                    ) : (
-                        'Xác nhận'
-                    )}
-                </button>
-            </div>
+            <Suspense fallback={<div className="text-center">Đang tải...</div>}>
+                <ResetPasswordForm />
+            </Suspense>
         </div>
     );
 }
