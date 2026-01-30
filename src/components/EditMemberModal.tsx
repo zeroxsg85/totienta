@@ -7,6 +7,13 @@ import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { Member, Spouse } from '@/types';
 import { toInputDateFormat } from '@/lib/formatDate';
 
+const EMPTY_SPOUSE: Spouse = {
+  name: '',
+  phoneNumber: '',
+  birthday: '',
+  hometown: '',
+};
+
 interface EditMemberModalProps {
   show: boolean;
   onHide: () => void;
@@ -35,7 +42,9 @@ export default function EditMemberModal({
         ...member,
         birthday: toInputDateFormat(member.birthday),
         deathDate: toInputDateFormat(member.deathDate),
-        spouse: member.spouse || [{}],
+        spouse: member.spouse && member.spouse.length > 0
+          ? member.spouse
+          : [EMPTY_SPOUSE],
         children:
           member.children?.map((c) =>
             typeof c === 'object' ? (c as Member)._id : (c as string)
@@ -64,8 +73,8 @@ export default function EditMemberModal({
   const handleSpouseChange = (field: keyof Spouse, value: string): void => {
     if (!editMember) return;
 
-    const updatedSpouse = editMember.spouse?.length ? [...editMember.spouse] : [{}];
-    updatedSpouse[0] = { ...updatedSpouse[0], [field]: value } as Spouse;
+    const updatedSpouse = editMember.spouse?.length ? [...editMember.spouse] : [EMPTY_SPOUSE];
+    updatedSpouse[0] = { ...updatedSpouse[0], [field]: value };
     setEditMember({ ...editMember, spouse: updatedSpouse });
   };
 

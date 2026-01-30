@@ -26,6 +26,24 @@ const registerUser = async (req, res) => {
         }
 
         const user = await User.create({ name, email, password });
+        try {
+            // gửi email chúc mừng
+            await sendEmail({
+                to: user.email,
+                subject: 'Chào mừng bạn đến với Totienta 🎉',
+                html: `
+    <h2>Chào ${user.name || 'bạn'} 👋</h2>
+    <p>Bạn đã đăng ký tài khoản thành công tại <strong>Totienta</strong>.</p>
+    <p>Bây giờ bạn có thể đăng nhập và bắt đầu tạo cây gia phả của mình.</p>
+    <br />
+    <p>Chúc bạn có trải nghiệm tuyệt vời 💙</p>
+    <hr />
+    <small>Totienta Team</small>
+  `,
+            });
+        } catch (e) {
+            console.error('Gửi mail chào mừng thất bại:', e);
+        }
 
         res.status(201).json({
             _id: user._id,
