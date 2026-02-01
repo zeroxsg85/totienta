@@ -10,16 +10,17 @@ import API from '@/lib/api';
 import FamilyTree from '@/components/FamilyTree';
 import MemberCard from '@/components/MemberCard';
 import { Member } from '@/types';
+import Loading from '@/components/Loading';
 
 interface ViewAccessClientProps {
   viewCode: string;
 }
 
 export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): JSX.Element {
-  const treeRef = useRef<HTMLUListElement>(null);
+  const treeRef = useRef<HTMLDivElement>(null);
   const [familyTree, setFamilyTree] = useState<Member[] | null>(null);
   const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isLoading, setLoading] = useState<boolean>(true);
   const [showMemberCard, setShowMemberCard] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -108,7 +109,29 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
 
     setExporting(true);
     try {
-      const canvas = await html2canvas(treeRef.current);
+      const element = treeRef.current;
+      const originalStyle = {
+        overflow: element.style.overflow,
+        width: element.style.width,
+        height: element.style.height,
+      };
+
+      element.style.overflow = 'visible';
+      element.style.width = 'auto';
+      element.style.height = 'auto';
+
+      const canvas = await html2canvas(element, {
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+      } as any);
+
+      element.style.overflow = originalStyle.overflow;
+      element.style.width = originalStyle.width;
+      element.style.height = originalStyle.height;
 
       const link = document.createElement('a');
       link.download = `gia-pha-${viewCode}-${new Date().toISOString().split('T')[0]}.png`;
@@ -123,12 +146,8 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
     }
   };
 
-  if (loading) {
-    return (
-      <div className="container mt-5 pt-4 text-center">
-        <p>Đang tải...</p>
-      </div>
-    );
+  if (isLoading) {
+    return <Loading text="Đang tải cây gia phả..." />;
   }
 
   if (error) {

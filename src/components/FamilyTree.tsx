@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, forwardRef } from 'react';
+import { useState, forwardRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { Member } from '@/types';
@@ -15,7 +15,7 @@ interface FamilyTreeProps {
   searchTerm?: string;
 }
 
-const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
+const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
   familyTree,
   onMemberClick,
   onAddMember,
@@ -23,6 +23,14 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
   searchTerm = '',
 }, ref): JSX.Element => {
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
+
+  // Khi search thay đổi, auto expand các node match
+  useEffect(() => {
+    if (searchTerm) {
+      // Expand tất cả khi đang search
+      setCollapsedNodes(new Set());
+    }
+  }, [searchTerm]);
 
   const toggleCollapse = (nodeId: string): void => {
     setCollapsedNodes((prev) => {
@@ -36,6 +44,7 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
     });
   };
 
+  // Kiểm tra xem node hoặc con cháu có match search không
   const isMatchSearch = (node: Member): boolean => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
@@ -45,6 +54,7 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
     return children?.some((child) => isMatchSearch(child)) || false;
   };
 
+  // Kiểm tra chính xác node này có match không (để highlight)
   const isExactMatch = (node: Member): boolean => {
     if (!searchTerm) return false;
     return node.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
@@ -55,6 +65,7 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
     parentGender: 'male' | 'female' | null = null,
     depth: number = 0
   ): JSX.Element | null => {
+    // Ẩn node nếu không match search
     if (searchTerm && !isMatchSearch(node)) return null;
 
     const tenTrongGiaPha = node.name?.includes('-')
@@ -67,7 +78,12 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
       return new Date(a.birthday).getTime() - new Date(b.birthday).getTime();
     });
 
-    const hasChildren = sortedChildren.length > 0;
+    // Lọc children theo search
+    const filteredChildren = searchTerm
+      ? sortedChildren.filter((child) => isMatchSearch(child))
+      : sortedChildren;
+
+    const hasChildren = filteredChildren.length > 0;
     const isCollapsed = collapsedNodes.has(node._id);
     const showAddButton =
       isEditable &&
@@ -78,9 +94,13 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
 
     return (
       <li key={node._id}>
+        {/* Collapse/Expand button */}
         {hasChildren && (
           <span
-            onClick={() => toggleCollapse(node._id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCollapse(node._id);
+            }}
             className="collapse-btn"
             title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
           >
@@ -123,9 +143,10 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
           </>
         )}
 
+        {/* Children - ẩn nếu collapsed */}
         {hasChildren && !isCollapsed && (
           <ul>
-            {sortedChildren.map((child) => renderTree(child, node.gender, depth + 1))}
+            {filteredChildren.map((child) => renderTree(child, node.gender, depth + 1))}
           </ul>
         )}
       </li>
@@ -140,7 +161,13 @@ const FamilyTree = forwardRef<HTMLUListElement, FamilyTreeProps>(({
     );
   }
 
-  return <ul ref={ref} className="family-tree-root">{familyTree.map((rootMember) => renderTree(rootMember))}</ul>;
+  return (
+    <div ref={ref} className="family-tree-wrapper">
+      <ul className="family-tree-root">
+        {familyTree.map((rootMember) => renderTree(rootMember))}
+      </ul>
+    </div>
+  );
 });
 
 FamilyTree.displayName = 'FamilyTree';

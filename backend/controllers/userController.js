@@ -27,20 +27,22 @@ const registerUser = async (req, res) => {
 
         const user = await User.create({ name, email, password });
         try {
-            // gửi email chúc mừng
-            await sendEmail({
-                to: user.email,
-                subject: 'Chào mừng bạn đến với Totienta 🎉',
-                html: `
+            // gửi email chúc mừng (chạy background)
+            setTimeout(() => {
+                sendEmail({
+                    to: user.email,
+                    subject: 'Chào mừng bạn đến với ToTienTa.com 🎉',
+                    html: `
     <h2>Chào ${user.name || 'bạn'} 👋</h2>
-    <p>Bạn đã đăng ký tài khoản thành công tại <strong>Totienta</strong>.</p>
+    <p>Bạn đã đăng ký tài khoản thành công tại <strong>ToTienTa.com</strong>.</p>
     <p>Bây giờ bạn có thể đăng nhập và bắt đầu tạo cây gia phả của mình.</p>
     <br />
     <p>Chúc bạn có trải nghiệm tuyệt vời 💙</p>
     <hr />
-    <small>Totienta Team</small>
+    <small>ToTienTa.com Team</small>
   `,
-            });
+                }).catch(e => console.error('Gửi mail chào mừng thất bại:', e));
+            }, 0);
         } catch (e) {
             console.error('Gửi mail chào mừng thất bại:', e);
         }
@@ -179,10 +181,55 @@ const changePassword = async (req, res) => {
     }
 };
 
+// Lấy thông tin profile
+const getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy thông tin', error });
+    }
+};
+
+// Cập nhật profile
+const updateProfile = async (req, res) => {
+    try {
+        const { name, phone, address, birthday } = req.body;
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        }
+
+        user.name = name || user.name;
+        user.phone = phone || user.phone;
+        user.address = address || user.address;
+        user.birthday = birthday || user.birthday;
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            phone: updatedUser.phone,
+            address: updatedUser.address,
+            birthday: updatedUser.birthday,
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi cập nhật thông tin', error });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     forgotPassword,
     resetPassword,
     changePassword,
+    getProfile,
+    updateProfile
 };

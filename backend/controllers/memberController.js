@@ -132,7 +132,8 @@ const getViewCode = async (req, res) => {
         const anyMember = await Member.findOne({ createdBy: userId }).select("viewCode");
 
         if (!anyMember || !anyMember.viewCode) {
-            return res.status(404).json({ message: "Chưa có mã xác thực", message });
+            // User mới chưa có viewCode - trả về rỗng, không phải lỗi
+            return res.status(200).json({ viewCode: null });
         }
 
         res.status(200).json({ viewCode: anyMember.viewCode });

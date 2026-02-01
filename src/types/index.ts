@@ -34,6 +34,20 @@ export interface Member {
   updatedAt?: string;
 }
 
+//Profile
+export interface UserProfile {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  birthday?: string;
+  avatar?: string;
+  plan?: 'free' | 'basic' | 'premium';
+  planExpiry?: string;
+  createdAt?: string;
+}
+
 // Form data types for creating/editing members
 export interface MemberFormData {
   name: string;

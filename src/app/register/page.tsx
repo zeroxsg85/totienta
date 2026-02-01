@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { faEnvelope, faLock, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faLock, faUser, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 
 import InputWithIcon from '@/components/InputWithIcon';
 import API from '@/lib/api';
@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function RegisterPage(): JSX.Element {
   const [form, setForm] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -45,6 +46,7 @@ export default function RegisterPage(): JSX.Element {
 
     try {
       const { data } = await API.post<LoginResponse>('/users/register', {
+        name: form.name,
         email: form.email,
         password: form.password,
       });
@@ -69,6 +71,14 @@ export default function RegisterPage(): JSX.Element {
         </h3>
 
         <form onSubmit={handleSubmit}>
+          <InputWithIcon
+            icon={faUser}
+            placeholder="Họ tên"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            disabled={loading}
+          />
           <InputWithIcon
             icon={faEnvelope}
             placeholder="Email"

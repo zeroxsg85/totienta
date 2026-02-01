@@ -18,6 +18,14 @@ const userSchema = new mongoose.Schema({
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
 
+    phone: { type: String, default: '' },
+    address: { type: String, default: '' },
+    birthday: { type: Date, default: null },
+    avatar: { type: String, default: '' },
+    // Cho tính năng tính phí sau này
+    plan: { type: String, enum: ['free', 'basic', 'premium'], default: 'free' },
+    planExpiry: { type: Date, default: null },
+
 }, { timestamps: true });
 
 // Mã hóa mật khẩu trước khi lưu

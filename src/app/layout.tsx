@@ -20,20 +20,33 @@ export const metadata: Metadata = {
   description:
     'Ứng dụng quản lý cây gia phả trực tuyến - Lưu giữ và chia sẻ lịch sử gia đình',
   keywords: ['gia phả', 'cây gia đình', 'phả hệ', 'tộc phả', 'family tree'],
-  authors: [{ name: 'Totienta' }],
+  authors: [{ name: 'ToTienTa.com' }],
   creator: 'Totienta',
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
     url: 'https://totienta.com',
-    siteName: 'Totienta',
-    title: 'Cây Gia Phả - Totienta',
+    siteName: 'ToTienTa.com',
+    title: 'Cây Gia Phả - ToTienTa.com',
     description:
       'Ứng dụng quản lý cây gia phả trực tuyến - Lưu giữ và chia sẻ lịch sử gia đình',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'android-chrome', url: '/android-chrome-192x192.png', sizes: '192x192' },
+      { rel: 'android-chrome', url: '/android-chrome-512x512.png', sizes: '512x512' },
+    ],
+  },
+  manifest: '/site.webmanifest',
   twitter: {
     card: 'summary_large_image',
-    title: 'Cây Gia Phả - Totienta',
+    title: 'Cây Gia Phả - ToTienTa.com',
     description: 'Ứng dụng quản lý cây gia phả trực tuyến',
   },
   robots: {

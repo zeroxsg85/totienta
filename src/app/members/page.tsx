@@ -22,11 +22,12 @@ import MemberCard from '@/components/MemberCard';
 import AddMemberModal from '@/components/AddMemberModal';
 import EditMemberModal from '@/components/EditMemberModal';
 import { Member, MemberFormData, ViewCodeResponse } from '@/types';
+import Loading from '@/components/Loading';
 
 export default function MembersPage(): JSX.Element | null {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const treeRef = useRef<HTMLUListElement>(null);
+  const treeRef = useRef<HTMLDivElement>(null);
 
   const [familyTree, setFamilyTree] = useState<Member[]>([]);
   const [allMembers, setAllMembers] = useState<Member[]>([]);
@@ -41,6 +42,7 @@ export default function MembersPage(): JSX.Element | null {
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editMember, setEditMember] = useState<Member | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const baseUrl =
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -102,6 +104,8 @@ export default function MembersPage(): JSX.Element | null {
       setAllMembers(allResponse.data);
     } catch (err) {
       console.error('Lỗi khi lấy dữ liệu:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -164,7 +168,33 @@ export default function MembersPage(): JSX.Element | null {
 
     setExporting(true);
     try {
-      const canvas = await html2canvas(treeRef.current);
+      // Lấy kích thước thực của cây (bao gồm phần bị ẩn)
+      const element = treeRef.current;
+      const originalStyle = {
+        overflow: element.style.overflow,
+        width: element.style.width,
+        height: element.style.height,
+      };
+
+      // Tạm thời bỏ giới hạn để lấy full size
+      element.style.overflow = 'visible';
+      element.style.width = 'auto';
+      element.style.height = 'auto';
+
+      const canvas = await html2canvas(element, {
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+      } as any);
+
+      // Khôi phục style
+      element.style.overflow = originalStyle.overflow;
+      element.style.width = originalStyle.width;
+      element.style.height = originalStyle.height;
+
       const link = document.createElement('a');
       link.download = `gia-pha-${new Date().toISOString().split('T')[0]}.png`;
       link.href = canvas.toDataURL('image/png');
@@ -227,12 +257,8 @@ export default function MembersPage(): JSX.Element | null {
     setShowEditModal(true);
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mt-5 pt-4 text-center">
-        <p>Đang tải...</p>
-      </div>
-    );
+  if (isLoading || loading) {
+    return <Loading text="Đang tải cây gia phả..." />;
   }
 
   if (!isAuthenticated) {

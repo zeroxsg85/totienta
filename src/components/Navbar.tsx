@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudSun, faSignInAlt, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCloudSun, faSignInAlt, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navbar(): JSX.Element {
@@ -56,11 +56,18 @@ export default function Navbar(): JSX.Element {
 
           <ul className="navbar-nav ms-auto">
             {isAuthenticated ? (
-              <li className="nav-item">
-                <button className="btn btn-link nav-link" onClick={handleLogout}>
-                  <FontAwesomeIcon icon={faSignOutAlt} /> Đăng Xuất
-                </button>
-              </li>
+              <>
+                <li className={`nav-item ${pathname === '/profile' ? 'active' : ''}`}>
+                  <Link className="nav-link" href="/profile" onClick={closeMenu}>
+                    <FontAwesomeIcon icon={faUser} /> Tài khoản
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <button className="btn btn-link nav-link" onClick={handleLogout}>
+                    <FontAwesomeIcon icon={faSignOutAlt} /> Đăng Xuất
+                  </button>
+                </li>
+              </>
             ) : (
               <li className={`nav-item ${pathname === '/login' ? 'active' : ''}`}>
                 <Link className="nav-link" href="/login" onClick={closeMenu}>
