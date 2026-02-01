@@ -39,6 +39,7 @@ const registerUser = async (req, res) => {
     <br />
     <p>Chúc bạn có trải nghiệm tuyệt vời 💙</p>
     <hr />
+    <b>Cần hỗ trợ vui lòng liên hệ: 0327.691.726 (Thanh Tùng)</b>
     <small>ToTienTa.com Team</small>
   `,
                 }).catch(e => console.error('Gửi mail chào mừng thất bại:', e));
