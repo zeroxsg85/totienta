@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema({
     // Cho tính năng tính phí sau này
     plan: { type: String, enum: ['free', 'basic', 'premium'], default: 'free' },
     planExpiry: { type: Date, default: null },
+    treeName: { type: String, default: '' },
 
 }, { timestamps: true });
 

@@ -350,6 +350,27 @@ const getAllMembersFlat = async (req, res) => {
     }
 };
 
+// Lấy thông tin cây gia phả qua viewCode (public)
+const getTreeInfo = async (req, res) => {
+    try {
+        const { viewCode } = req.params;
+
+        const member = await Member.findOne({ viewCode });
+        if (!member) {
+            return res.status(404).json({ message: 'Không tìm thấy cây gia phả' });
+        }
+
+        const user = await require('../models/User').findById(member.createdBy).select('treeName name');
+
+        res.json({
+            treeName: user?.treeName || '',
+            ownerName: user?.name || '',
+            viewCode,
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy thông tin', error });
+    }
+};
 module.exports = {
     getFamilyTree,
     getAllMembers,
@@ -362,4 +383,5 @@ module.exports = {
     getViewCode,
     updateViewCode,
     uploadMemberAvatar,
+    getTreeInfo,
 };

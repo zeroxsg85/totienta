@@ -198,7 +198,7 @@ const getProfile = async (req, res) => {
 // Cập nhật profile
 const updateProfile = async (req, res) => {
     try {
-        const { name, phone, address, birthday } = req.body;
+        const { name, phone, address, birthday, treeName } = req.body;
 
         const user = await User.findById(req.user._id);
         if (!user) {
@@ -209,6 +209,7 @@ const updateProfile = async (req, res) => {
         user.phone = phone || user.phone;
         user.address = address || user.address;
         user.birthday = birthday || user.birthday;
+        if (treeName !== undefined) user.treeName = treeName;
 
         const updatedUser = await user.save();
 
@@ -219,6 +220,7 @@ const updateProfile = async (req, res) => {
             phone: updatedUser.phone,
             address: updatedUser.address,
             birthday: updatedUser.birthday,
+            treeName: updatedUser.treeName,
         });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi cập nhật thông tin', error });

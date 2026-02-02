@@ -14,14 +14,14 @@ config.autoAddCss = false;
 
 export const metadata: Metadata = {
   title: {
-    default: 'Cây Gia Phả - Totienta',
-    template: '%s | Totienta',
+    default: 'Cây Gia Phả - ToTienTa.com',
+    template: '%s | ToTienTa.com',
   },
   description:
     'Ứng dụng quản lý cây gia phả trực tuyến - Lưu giữ và chia sẻ lịch sử gia đình',
   keywords: ['gia phả', 'cây gia đình', 'phả hệ', 'tộc phả', 'family tree'],
   authors: [{ name: 'ToTienTa.com' }],
-  creator: 'Totienta',
+  creator: 'ToTienTa.com',
   openGraph: {
     type: 'website',
     locale: 'vi_VN',

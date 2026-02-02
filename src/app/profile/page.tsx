@@ -13,6 +13,7 @@ import {
     faCrown,
     faKey,
     faSave,
+    faTree,
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +34,7 @@ export default function ProfilePage(): JSX.Element | null {
         phone: '',
         address: '',
         birthday: '',
+        treeName: '',
     });
 
     // Redirect if not authenticated
@@ -53,6 +55,7 @@ export default function ProfilePage(): JSX.Element | null {
                     phone: data.phone || '',
                     address: data.address || '',
                     birthday: data.birthday ? data.birthday.split('T')[0] : '',
+                    treeName: data.treeName || '',
                 });
             } catch (error) {
                 toast.error('Không thể tải thông tin profile');
@@ -193,6 +196,23 @@ export default function ProfilePage(): JSX.Element | null {
                                         value={form.birthday}
                                         onChange={handleChange}
                                     />
+                                </Form.Group>
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>
+                                        <FontAwesomeIcon icon={faTree} className="me-2" />
+                                        Tên cây gia phả
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="treeName"
+                                        value={form.treeName}
+                                        onChange={handleChange}
+                                        placeholder="VD: Họ Hoàng Lạng Sơn"
+                                    />
+                                    <Form.Text className="text-muted">
+                                        Tên này sẽ hiển thị khi chia sẻ cây gia phả
+                                    </Form.Text>
                                 </Form.Group>
 
                                 <Button type="submit" variant="primary" disabled={saving}>

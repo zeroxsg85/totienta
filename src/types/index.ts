@@ -47,6 +47,7 @@ export interface UserProfile {
   plan?: 'free' | 'basic' | 'premium';
   planExpiry?: string;
   createdAt?: string;
+  treeName?: string;
 }
 
 // Form data types for creating/editing members

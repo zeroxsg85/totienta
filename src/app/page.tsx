@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import HomeClient from './HomeClient';
 
 export const metadata: Metadata = {
   title: 'Trang Chủ',
@@ -7,10 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage(): JSX.Element {
-  return (
-    <div className="container mt-5 pt-4">
-      <h1 className="text-center">Trang Chủ</h1>
-      <p className="text-center">Chào mừng bạn đến với ứng dụng Cây Gia Phả.</p>
-    </div>
-  );
+  return <HomeClient />;
 }
