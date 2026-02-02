@@ -234,7 +234,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         </Button>
 
         <Button
-          variant="outline-warning"
+          variant="outline-primary"
           size="sm"
           onClick={() => setShowSuggestionModal(true)}
           title="Đề xuất thay đổi"
