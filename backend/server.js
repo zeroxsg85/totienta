@@ -21,6 +21,8 @@ const memberRoutes = require('./routes/memberRoutes');
 app.use('/api/members', memberRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
+const suggestionRoutes = require('./routes/suggestionRoutes');
+app.use('/api/suggestions', suggestionRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {

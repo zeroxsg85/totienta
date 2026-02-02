@@ -26,6 +26,7 @@ export interface Member {
   deathDate?: string;
   parent?: string | Member | null;
   children: (string | Member)[];
+  spouseIndex?: number; // 👈 Thêm dòng này
   order?: number;
   createdBy: string;
   viewCode?: string;
@@ -61,6 +62,7 @@ export interface MemberFormData {
   deathDate?: string;
   parent?: string | null;
   children?: string[];
+  spouseIndex?: number;
 }
 
 // User types

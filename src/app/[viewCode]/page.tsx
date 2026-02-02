@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import ViewAccessClient from './ViewAccessClient';
+import Loading from '@/components/Loading';
 
 interface PageProps {
   params: Promise<{ viewCode: string }>;
 }
 
-// Generate metadata dynamically for SEO
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { viewCode } = await params;
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'website',
     },
     robots: {
-      index: false, // Don't index shared family trees for privacy
+      index: false,
       follow: false,
     },
   };
@@ -27,5 +28,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ViewAccessPage({ params }: PageProps): Promise<JSX.Element> {
   const { viewCode } = await params;
 
-  return <ViewAccessClient viewCode={viewCode} />;
+  return (
+    <Suspense fallback={<Loading text="Đang tải..." />}>
+      <ViewAccessClient viewCode={viewCode} />
+    </Suspense>
+  );
 }

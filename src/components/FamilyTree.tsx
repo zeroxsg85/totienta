@@ -24,10 +24,8 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
 }, ref): JSX.Element => {
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
-  // Khi search thay đổi, auto expand các node match
   useEffect(() => {
     if (searchTerm) {
-      // Expand tất cả khi đang search
       setCollapsedNodes(new Set());
     }
   }, [searchTerm]);
@@ -44,7 +42,6 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
     });
   };
 
-  // Kiểm tra xem node hoặc con cháu có match search không
   const isMatchSearch = (node: Member): boolean => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
@@ -54,19 +51,37 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
     return children?.some((child) => isMatchSearch(child)) || false;
   };
 
-  // Kiểm tra chính xác node này có match không (để highlight)
   const isExactMatch = (node: Member): boolean => {
     if (!searchTerm) return false;
     return node.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
   };
 
+  // Nhóm con theo spouseIndex
+  const groupChildrenBySpouse = (children: Member[], spouses: Member['spouse']) => {
+    if (!spouses || spouses.length <= 1) {
+      return null; // Không cần nhóm nếu chỉ có 1 vợ/chồng
+    }
+
+    const groups: { [key: number]: Member[] } = {};
+    children.forEach((child) => {
+      const idx = child.spouseIndex || 0;
+      if (!groups[idx]) groups[idx] = [];
+      groups[idx].push(child);
+    });
+
+    return groups;
+  };
+
   const renderTree = (
     node: Member,
     parentGender: 'male' | 'female' | null = null,
-    depth: number = 0
+    depth: number = 0,
+    parentMatched: boolean = false
   ): JSX.Element | null => {
-    // Ẩn node nếu không match search
-    if (searchTerm && !isMatchSearch(node)) return null;
+    const nodeMatches = isExactMatch(node);
+    const shouldShow = !searchTerm || isMatchSearch(node) || parentMatched;
+
+    if (!shouldShow) return null;
 
     const tenTrongGiaPha = node.name?.includes('-')
       ? node.name.split('-')
@@ -74,28 +89,37 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
 
     const children = node.children as Member[];
     const sortedChildren = [...(children || [])].sort((a, b) => {
+      // Sắp xếp theo spouseIndex trước, rồi theo birthday
+      const spouseCompare = (a.spouseIndex || 0) - (b.spouseIndex || 0);
+      if (spouseCompare !== 0) return spouseCompare;
       if (!a.birthday || !b.birthday) return 0;
       return new Date(a.birthday).getTime() - new Date(b.birthday).getTime();
     });
 
-    // Lọc children theo search
-    const filteredChildren = searchTerm
-      ? sortedChildren.filter((child) => isMatchSearch(child))
-      : sortedChildren;
+    const showAllChildren = nodeMatches || parentMatched;
+    const filteredChildren = showAllChildren
+      ? sortedChildren
+      : sortedChildren.filter((child) => isMatchSearch(child));
 
-    const hasChildren = filteredChildren.length > 0;
+    const hasRealChildren = sortedChildren.length > 0;
+    const hasVisibleChildren = filteredChildren.length > 0;
+
     const isCollapsed = collapsedNodes.has(node._id);
     const showAddButton =
       isEditable &&
       !(parentGender === 'female' || (node.maritalStatus === 'single' && !node.isAlive));
 
     const childCount = node.children?.length || 0;
-    const isHighlighted = isExactMatch(node);
+    const isHighlighted = nodeMatches;
+
+    // Nhóm con theo vợ/chồng
+    const spouseGroups = groupChildrenBySpouse(filteredChildren, node.spouse);
+    const hasMultipleSpouses = node.spouse && node.spouse.length > 1;
 
     return (
       <li key={node._id}>
         {/* Collapse/Expand button */}
-        {hasChildren && (
+        {hasRealChildren && (
           <span
             onClick={(e) => {
               e.stopPropagation();
@@ -143,10 +167,39 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
           </>
         )}
 
-        {/* Children - ẩn nếu collapsed */}
-        {hasChildren && !isCollapsed && (
+        {/* Children */}
+        {hasVisibleChildren && !isCollapsed && (
           <ul>
-            {filteredChildren.map((child) => renderTree(child, node.gender, depth + 1))}
+            {hasMultipleSpouses && spouseGroups ? (
+              // Hiển thị theo nhóm vợ/chồng
+              Object.keys(spouseGroups).map((idx) => {
+                const spouseIdx = parseInt(idx);
+                const spouse = node.spouse?.[spouseIdx];
+                const spouseChildren = spouseGroups[spouseIdx];
+                const spouseLabel = node.gender === 'male'
+                  ? `Vợ ${spouseIdx + 1}`
+                  : `Chồng ${spouseIdx + 1}`;
+
+                return (
+                  <li key={`spouse-${spouseIdx}`} className="spouse-group">
+                    <span className="spouse-label">
+                      {spouse?.name ? `${spouseLabel}: ${spouse.name}` : spouseLabel}
+                      <span className="spouse-children-count"> ({spouseChildren.length} con)</span>
+                    </span>
+                    <ul>
+                      {spouseChildren.map((child) =>
+                        renderTree(child, node.gender, depth + 1, nodeMatches || parentMatched)
+                      )}
+                    </ul>
+                  </li>
+                );
+              })
+            ) : (
+              // Hiển thị bình thường
+              filteredChildren.map((child) =>
+                renderTree(child, node.gender, depth + 1, nodeMatches || parentMatched)
+              )
+            )}
           </ul>
         )}
       </li>

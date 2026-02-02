@@ -1,74 +1,81 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faExpand, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faExpand, faCamera, faLink, faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import SuggestionModal from '@/components/SuggestionModal';
 import html2canvas from 'html2canvas';
 import { toast } from 'react-toastify';
 import API from '@/lib/api';
 import FamilyTree from '@/components/FamilyTree';
 import MemberCard from '@/components/MemberCard';
-import { Member } from '@/types';
 import Loading from '@/components/Loading';
+import { Member } from '@/types';
 
 interface ViewAccessClientProps {
   viewCode: string;
 }
 
 export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): JSX.Element {
+  const searchParams = useSearchParams();
   const treeRef = useRef<HTMLDivElement>(null);
+
   const [familyTree, setFamilyTree] = useState<Member[] | null>(null);
   const [error, setError] = useState<string>('');
-  const [isLoading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [showMemberCard, setShowMemberCard] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [treeKey, setTreeKey] = useState<number>(0);
   const [exporting, setExporting] = useState<boolean>(false);
+  const [showSuggestionModal, setShowSuggestionModal] = useState<boolean>(false);
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
 
   const baseUrl =
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      ? 'http://localhost:3000'
+      ? 'http://localhost:4867'
       : 'https://totienta.com';
 
-  // Lấy tất cả members từ cây (flatten)
-  const getAllMembers = (tree: Member[]): Member[] => {
-    const result: Member[] = [];
-    const traverse = (node: Member) => {
-      result.push(node);
-      const children = node.children as Member[];
-      children?.forEach(child => traverse(child));
-    };
-    tree?.forEach(root => traverse(root));
-    return result;
+  // Lấy search từ URL khi load
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) {
+      setSearchTerm(searchFromUrl);
+    }
+  }, [searchParams]);
+
+  // Cập nhật URL khi search thay đổi
+  const updateSearchUrl = (term: string) => {
+    setSearchTerm(term);
+
+    // Cập nhật URL không reload trang
+    const url = new URL(window.location.href);
+    if (term) {
+      url.searchParams.set('search', term);
+    } else {
+      url.searchParams.delete('search');
+    }
+    window.history.replaceState({}, '', url.toString());
   };
 
-  // Tính toán thống kê
-  const calculateStats = () => {
-    if (!familyTree || familyTree.length === 0) {
-      return { totalGenerations: 0, total: 0, male: 0, female: 0, alive: 0, deceased: 0 };
+  // Copy link tìm kiếm
+  const copySearchLink = async () => {
+    if (!searchTerm) {
+      toast.warning('Vui lòng nhập từ khóa tìm kiếm trước');
+      return;
     }
 
-    const allMembers = getAllMembers(familyTree);
-    const total = allMembers.length;
-    const male = allMembers.filter(m => m.gender === 'male').length;
-    const female = allMembers.filter(m => m.gender === 'female').length;
-    const alive = allMembers.filter(m => m.isAlive).length;
-    const deceased = allMembers.filter(m => !m.isAlive).length;
+    const searchUrl = `${baseUrl}/${viewCode}?search=${encodeURIComponent(searchTerm)}`;
 
-    const getDepth = (node: Member, depth: number = 1): number => {
-      const children = node.children as Member[];
-      if (!children || children.length === 0) return depth;
-      return Math.max(...children.map(child => getDepth(child, depth + 1)));
-    };
-
-    const totalGenerations = Math.max(...familyTree.map(root => getDepth(root)));
-
-    return { totalGenerations, total, male, female, alive, deceased };
+    try {
+      await navigator.clipboard.writeText(searchUrl);
+      toast.success('Đã sao chép link tìm kiếm!');
+    } catch {
+      toast.error('Không thể sao chép');
+    }
   };
-
-  const stats = calculateStats();
 
   useEffect(() => {
     const fetchFamilyTreeByViewCode = async (): Promise<void> => {
@@ -81,6 +88,20 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
       try {
         const response = await API.get<Member[]>(`/members/view/${viewCode}`);
         setFamilyTree(response.data);
+
+        // Flatten tree để lấy tất cả members
+        const flattenTree = (members: Member[]): Member[] => {
+          let result: Member[] = [];
+          members.forEach((m) => {
+            result.push(m);
+            if (m.children && m.children.length > 0) {
+              result = result.concat(flattenTree(m.children as Member[]));
+            }
+          });
+          return result;
+        };
+        setAllMembers(flattenTree(response.data));
+
         setError('');
       } catch {
         setError('Mã xác thực không hợp lệ');
@@ -146,7 +167,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return <Loading text="Đang tải cây gia phả..." />;
   }
 
@@ -173,12 +194,21 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
             type="text"
             placeholder="Tìm thành viên..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => updateSearchUrl(e.target.value)}
           />
           {searchTerm && (
-            <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
-              ✕
-            </Button>
+            <>
+              <Button
+                variant="outline-secondary"
+                onClick={copySearchLink}
+                title="Sao chép link tìm kiếm"
+              >
+                <FontAwesomeIcon icon={faLink} />
+              </Button>
+              <Button variant="outline-secondary" onClick={() => updateSearchUrl('')}>
+                ✕
+              </Button>
+            </>
           )}
         </InputGroup>
 
@@ -202,18 +232,17 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         >
           <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
         </Button>
+
+        <Button
+          variant="outline-warning"
+          size="sm"
+          onClick={() => setShowSuggestionModal(true)}
+          title="Đề xuất thay đổi"
+          className="ms-2"
+        >
+          <FontAwesomeIcon icon={faLightbulb} /> Đề xuất
+        </Button>
       </div>
-      {/* Thống kê */}
-      {familyTree && familyTree.length > 0 && (
-        <div className="tree-stats">
-          <span>📊 <strong>{stats.totalGenerations}</strong> đời</span>
-          <span>👥 <strong>{stats.total}</strong> thành viên</span>
-          <span>👨 <strong>{stats.male}</strong> nam</span>
-          <span>👩 <strong>{stats.female}</strong> nữ</span>
-          <span>💚 <strong>{stats.alive}</strong> còn sống</span>
-          <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
-        </div>
-      )}
 
       <section className="list-tree">
         {familyTree && familyTree.length > 0 ? (
@@ -238,6 +267,12 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         member={selectedMember}
         isEditable={false}
         baseUrl={baseUrl}
+      />
+      <SuggestionModal
+        show={showSuggestionModal}
+        onHide={() => setShowSuggestionModal(false)}
+        viewCode={viewCode}
+        allMembers={allMembers}
       />
     </div>
   );

@@ -179,10 +179,10 @@ body {
 
 /* ===== SEARCH HIGHLIGHT ===== */
 .member-name.highlighted {
-  background-color: #fff3cd;
+  background-color: #c9b061;
   padding: 2px 6px;
+  margin: -2px -6px;
   border-radius: 4px;
-  box-shadow: 0 0 0 2px #ffc107;
 }
 
 /* ===== Adjust tree margin for toolbar ===== */
@@ -270,4 +270,110 @@ body {
 .family-tree-wrapper {
   display: inline-block;
   min-width: 100%;
+}
+
+/* ===== SPOUSE GROUP ===== */
+.spouse-group {
+  list-style: none;
+}
+
+.spouse-label {
+  font-style: italic;
+  color: #e91e63;
+  font-size: 14px;
+  cursor: default;
+}
+
+.spouse-children-count {
+  color: #999;
+  font-size: 12px;
+}
+
+/* ===== SPOUSE SECTION ===== */
+.spouse-section {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.spouse-item {
+  background: #fff;
+}
+
+/* ===== SEARCHABLE SELECT ===== */
+.searchable-select {
+  position: relative;
+}
+
+.searchable-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1050;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.searchable-select-dropdown .list-group-item {
+  cursor: pointer;
+  padding: 8px 12px;
+}
+
+.searchable-select-dropdown .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.searchable-select-dropdown .list-group-item.active {
+  background-color: #af8600;
+  border-color: #af8600;
+}
+
+/* ===== SELECT CHILDREN MODAL ===== */
+.selected-children-list {
+  min-height: 40px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.selected-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.remove-badge {
+  margin-left: 8px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.remove-badge:hover {
+  opacity: 1;
+}
+
+.children-checklist {
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* ===== SUGGESTION FORM ===== */
+.suggestion-form {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.suggestion-form h6 {
+  margin-bottom: 15px;
+  color: #495057;
 }

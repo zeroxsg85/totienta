@@ -46,11 +46,18 @@ export default function Navbar(): JSX.Element {
               </Link>
             </li>
             {isAuthenticated && (
-              <li className={`nav-item ${pathname === '/members' ? 'active' : ''}`}>
-                <Link className="nav-link" href="/members" onClick={closeMenu}>
-                  Cây Của Bạn
-                </Link>
-              </li>
+              <>
+                <li className={`nav-item ${pathname === '/members' ? 'active' : ''}`}>
+                  <Link className="nav-link" href="/members" onClick={closeMenu}>
+                    Cây Của Bạn
+                  </Link>
+                </li>
+                <li className={`nav-item ${pathname === '/suggestions' ? 'active' : ''}`}>
+                  <Link className="nav-link" href="/suggestions" onClick={closeMenu}>
+                    Đề xuất
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
 
