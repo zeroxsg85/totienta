@@ -12,6 +12,7 @@ import {
     faUserPlus,
     faEdit,
     faExclamationTriangle,
+    faUndo,
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
@@ -72,6 +73,18 @@ export default function SuggestionsPage(): JSX.Element | null {
             fetchSuggestions();
         } catch (error) {
             toast.error('Lỗi khi từ chối đề xuất');
+        }
+    };
+
+    const handleRevert = async (id: string) => {
+        if (!confirm('Chuyển đề xuất này về trạng thái chờ duyệt?')) return;
+
+        try {
+            await API.put(`/suggestions/${id}/revert`);
+            toast.success('Đã chuyển về chờ duyệt');
+            fetchSuggestions();
+        } catch (error) {
+            toast.error('Lỗi khi cập nhật');
         }
     };
 
@@ -264,14 +277,25 @@ export default function SuggestionsPage(): JSX.Element | null {
                                                 </Button>
                                             </>
                                         ) : (
-                                            <Button
-                                                variant="outline-danger"
-                                                size="sm"
-                                                onClick={() => handleDelete(s._id)}
-                                                title="Xóa"
-                                            >
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </Button>
+                                            <>
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    size="sm"
+                                                    className="me-1"
+                                                    onClick={() => handleRevert(s._id)}
+                                                    title="Chuyển về chờ duyệt"
+                                                >
+                                                    <FontAwesomeIcon icon={faUndo} />
+                                                </Button>
+                                                <Button
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    onClick={() => handleDelete(s._id)}
+                                                    title="Xóa"
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </Button>
+                                            </>
                                         )}
                                     </td>
                                 </tr>

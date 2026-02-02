@@ -191,6 +191,28 @@ const deleteSuggestion = async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi xóa đề xuất', error });
     }
 };
+// Chuyển về trạng thái pending
+const revertSuggestion = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const suggestion = await Suggestion.findOne({
+            _id: id,
+            treeOwner: req.user._id,
+        });
+
+        if (!suggestion) {
+            return res.status(404).json({ message: 'Không tìm thấy đề xuất' });
+        }
+
+        suggestion.status = 'pending';
+        await suggestion.save();
+
+        res.json({ message: 'Đã chuyển về chờ duyệt', suggestion });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi cập nhật', error });
+    }
+};
 
 module.exports = {
     createSuggestion,
@@ -199,4 +221,5 @@ module.exports = {
     approveSuggestion,
     rejectSuggestion,
     deleteSuggestion,
+    revertSuggestion,
 };

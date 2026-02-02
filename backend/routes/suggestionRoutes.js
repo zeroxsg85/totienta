@@ -8,6 +8,7 @@ const {
     approveSuggestion,
     rejectSuggestion,
     deleteSuggestion,
+    revertSuggestion
 } = require('../controllers/suggestionController');
 
 // Public - không cần đăng nhập
@@ -19,5 +20,6 @@ router.get('/count', protect, countPendingSuggestions);
 router.put('/:id/approve', protect, approveSuggestion);
 router.put('/:id/reject', protect, rejectSuggestion);
 router.delete('/:id', protect, deleteSuggestion);
+router.put('/:id/revert', protect, revertSuggestion);
 
 module.exports = router;

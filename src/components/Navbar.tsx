@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudSun, faSignInAlt, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '@/contexts/AuthContext';
+import API from '@/lib/api';
 
 export default function Navbar(): JSX.Element {
   const { isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const handleLogout = (): void => {
     logout();
@@ -20,6 +22,26 @@ export default function Navbar(): JSX.Element {
   const closeMenu = (): void => {
     setIsOpen(false);
   };
+
+  // Lấy số đề xuất pending
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const { data } = await API.get<{ count: number }>('/suggestions/count');
+        setPendingCount(data.count);
+      } catch (error) {
+        // Bỏ qua lỗi
+      }
+    };
+
+    fetchPendingCount();
+
+    // Refresh mỗi 30 giây
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -53,8 +75,11 @@ export default function Navbar(): JSX.Element {
                   </Link>
                 </li>
                 <li className={`nav-item ${pathname === '/suggestions' ? 'active' : ''}`}>
-                  <Link className="nav-link" href="/suggestions" onClick={closeMenu}>
+                  <Link className="nav-link position-relative" href="/suggestions" onClick={closeMenu}>
                     Đề xuất
+                    {pendingCount > 0 && (
+                      <span className="notification-badge">{pendingCount > 9 ? '9+' : pendingCount}</span>
+                    )}
                   </Link>
                 </li>
               </>

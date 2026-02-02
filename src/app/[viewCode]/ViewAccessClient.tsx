@@ -238,7 +238,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
           size="sm"
           onClick={() => setShowSuggestionModal(true)}
           title="Đề xuất thay đổi"
-          className="ms-2"
+          className="ms-2 btn-suggest-pulse"
         >
           <FontAwesomeIcon icon={faLightbulb} /> Đề xuất
         </Button>
