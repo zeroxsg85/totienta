@@ -396,7 +396,7 @@ body {
 
 /* ===== NÚT ĐỀ XUẤT NHẤP NHÁY ===== */
 .btn-suggest-pulse {
-  animation: suggest-pulse 0.5s ease-in-out infinite;
+  animation: suggest-pulse 0.7s ease-in-out infinite;
   font-weight: bold;
 }
 
@@ -422,7 +422,7 @@ body {
 
 /* ===== HOMEPAGE ===== */
 .homepage {
-  margin-top: 56px;
+  margin-top: 8px;
 }
 
 /* Hero Section */
@@ -439,7 +439,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 10px 10px;
 }
 
 .hero-content {
@@ -642,7 +642,7 @@ body {
 
 /* Quote Section */
 .quote-section {
-  padding: 60px 20px;
+  padding: 20px 10px;
   background: linear-gradient(135deg, #af8600 0%, #8a6b00 100%);
   text-align: center;
 }

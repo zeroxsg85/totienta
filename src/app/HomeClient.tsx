@@ -144,9 +144,14 @@ export default function HomeClient(): JSX.Element {
                                     <FontAwesomeIcon icon={faArrowRight} className="ms-2" />
                                 </Button>
                             </Link>
-                            <Link href="/login">
+                            {/* <Link href="/login">
                                 <Button variant="outline-primary" size="lg" className="cta-button-outline">
                                     Đăng nhập
+                                </Button>
+                            </Link> */}
+                            <Link href="/04BAAF10" target='_blank'>
+                                <Button variant="outline-primary" size="lg" className="cta-button-outline">
+                                    Xem Họ Hoàng-LẠNG SƠN
                                 </Button>
                             </Link>
                         </>
