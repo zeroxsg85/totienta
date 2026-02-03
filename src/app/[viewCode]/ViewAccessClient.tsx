@@ -32,6 +32,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
   const [exporting, setExporting] = useState<boolean>(false);
   const [showSuggestionModal, setShowSuggestionModal] = useState<boolean>(false);
   const [allMembers, setAllMembers] = useState<Member[]>([]);
+  const [hideFemale, setHideFemale] = useState<boolean>(false);
 
   const baseUrl =
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -275,7 +276,15 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         >
           <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
         </Button>
-
+        <Button
+          variant={hideFemale ? "warning" : "outline-warning"}
+          size="sm"
+          onClick={() => setHideFemale(!hideFemale)}
+          title={hideFemale ? "Hiện nữ" : "Ẩn nữ"}
+          className="ms-2"
+        >
+          👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+        </Button>
         <Button
           variant="outline-primary"
           size="sm"
@@ -310,6 +319,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
             onMemberClick={handleMemberClick}
             isEditable={false}
             searchTerm={searchTerm}
+            hideFemale={hideFemale}
           />
         ) : (
           <div className="text-center mt-5 pt-4">
