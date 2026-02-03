@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -22,7 +22,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
   const searchParams = useSearchParams();
   const treeRef = useRef<HTMLDivElement>(null);
 
-  const [familyTree, setFamilyTree] = useState<Member[] | null>(null);
+  const [familyTree, setFamilyTree] = useState<Member[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [showMemberCard, setShowMemberCard] = useState<boolean>(false);
@@ -37,6 +37,43 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
       ? 'http://localhost:4867'
       : 'https://totienta.com';
+
+  // Tính toán thống kê (thêm phần này)
+  const stats = useMemo(() => {
+    if (!allMembers.length) {
+      return {
+        totalGenerations: 0,
+        total: 0,
+        male: 0,
+        female: 0,
+        alive: 0,
+        deceased: 0,
+      };
+    }
+
+    const total = allMembers.length;
+    const male = allMembers.filter(m => m.gender === 'male').length;
+    const female = allMembers.filter(m => m.gender === 'female').length;
+    const alive = allMembers.filter(m => m.isAlive === true).length;
+    const deceased = allMembers.filter(m => m.isAlive === false).length;
+
+    const getDepth = (node: Member, depth: number = 1): number => {
+      if (!node.children || node.children.length === 0) return depth;
+
+      return Math.max(
+        ...node.children
+          .filter((c): c is Member => typeof c === 'object')
+          .map(c => getDepth(c, depth + 1))
+      );
+    };
+
+    const totalGenerations =
+      familyTree.length > 0
+        ? Math.max(...familyTree.map(root => getDepth(root)))
+        : 0;
+
+    return { totalGenerations, total, male, female, alive, deceased };
+  }, [allMembers, familyTree]);
 
   // Lấy search từ URL khi load
   useEffect(() => {
@@ -87,20 +124,26 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
 
       try {
         const response = await API.get<Member[]>(`/members/view/${viewCode}`);
-        setFamilyTree(response.data);
+        const treeData = response.data;
+        setFamilyTree(treeData);
 
         // Flatten tree để lấy tất cả members
         const flattenTree = (members: Member[]): Member[] => {
           let result: Member[] = [];
-          members.forEach((m) => {
+          for (const m of members) {
             result.push(m);
-            if (m.children && m.children.length > 0) {
-              result = result.concat(flattenTree(m.children as Member[]));
+            const children = m.children as Member[];
+            if (children && children.length > 0) {
+              result = result.concat(flattenTree(children));
             }
-          });
+          }
           return result;
         };
-        setAllMembers(flattenTree(response.data));
+
+        const flattened = flattenTree(treeData);
+        console.log('Tree data:', treeData);
+        console.log('Flattened members count:', flattened.length);
+        setAllMembers(flattened);
 
         setError('');
       } catch {
@@ -243,6 +286,20 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
           <FontAwesomeIcon icon={faLightbulb} /> Đề xuất
         </Button>
       </div>
+
+      {/* Thống kê - Đã sửa CSS để không bị Toolbar che */}
+      {allMembers.length > 0 && (
+        <div
+          className="tree-stats"
+        >
+          <span className="me-3">📊 <strong>{stats.totalGenerations}</strong> đời</span>
+          <span className="me-3">👥 <strong>{stats.total}</strong> thành viên</span>
+          <span className="me-3">👨 <strong>{stats.male}</strong> nam</span>
+          <span className="me-3">👩 <strong>{stats.female}</strong> nữ</span>
+          <span className="me-3">💚 <strong>{stats.alive}</strong> còn sống</span>
+          <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
+        </div>
+      )}
 
       <section className="list-tree">
         {familyTree && familyTree.length > 0 ? (

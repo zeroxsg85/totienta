@@ -13,6 +13,7 @@ interface FamilyTreeProps {
   onAddMember?: (parentId: string) => void;
   isEditable?: boolean;
   searchTerm?: string;
+  hideFemale?: boolean;
 }
 
 const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
@@ -21,6 +22,7 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
   onAddMember,
   isEditable = false,
   searchTerm = '',
+  hideFemale = false,
 }, ref): JSX.Element => {
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
@@ -80,6 +82,7 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
   ): JSX.Element | null => {
     const nodeMatches = isExactMatch(node);
     const shouldShow = !searchTerm || isMatchSearch(node) || parentMatched;
+    if (hideFemale && node.gender === 'female') return null;
 
     if (!shouldShow) return null;
 
@@ -97,10 +100,14 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
     });
 
     const showAllChildren = nodeMatches || parentMatched;
-    const filteredChildren = showAllChildren
+    let filteredChildren = showAllChildren
       ? sortedChildren
       : sortedChildren.filter((child) => isMatchSearch(child));
 
+    // Lọc bỏ nữ nếu hideFemale
+    if (hideFemale) {
+      filteredChildren = filteredChildren.filter((child) => child.gender !== 'female');
+    }
     const hasRealChildren = sortedChildren.length > 0;
     const hasVisibleChildren = filteredChildren.length > 0;
 

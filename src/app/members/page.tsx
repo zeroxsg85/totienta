@@ -35,6 +35,7 @@ export default function MembersPage(): JSX.Element | null {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [treeKey, setTreeKey] = useState<number>(0);
   const [exporting, setExporting] = useState<boolean>(false);
+  const [hideFemale, setHideFemale] = useState<boolean>(false);
 
   const [showMemberCard, setShowMemberCard] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -106,6 +107,7 @@ export default function MembersPage(): JSX.Element | null {
       console.error('Lỗi khi lấy dữ liệu:', err);
     } finally {
       setLoading(false);
+      console.log(allMembers);
     }
   };
 
@@ -309,6 +311,15 @@ export default function MembersPage(): JSX.Element | null {
         >
           <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
         </Button>
+        <Button
+          variant={hideFemale ? "warning" : "outline-warning"}
+          size="sm"
+          onClick={() => setHideFemale(!hideFemale)}
+          title={hideFemale ? "Hiện nữ" : "Ẩn nữ"}
+          className="ms-2"
+        >
+          👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+        </Button>
       </div>
 
       {/* Thống kê */}
@@ -333,6 +344,7 @@ export default function MembersPage(): JSX.Element | null {
             onAddMember={handleAddClick}
             isEditable={true}
             searchTerm={searchTerm}
+            hideFemale={hideFemale}
           />
         ) : (
           <div className="text-center mt-5 pt-4">
