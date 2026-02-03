@@ -16,4 +16,4 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script_stop: true
           script: |
-            /home/www-data/totienta/deploy.sh
+           bash /home/www-data/totienta/deploy.sh
