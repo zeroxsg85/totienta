@@ -1,6 +1,6 @@
 /* Tree styles*/
 .list-tree {
-    margin-top: 68px;
+    margin-top: 60px;
     --tree-clr: #af8600;
     --tree-font-size: 1rem;
     --tree-item-height: 2;
@@ -141,7 +141,7 @@
 
 @media (min-width: 769px) {
     .list-tree {
-        margin-top: 10px !important;
+        margin-top: 60px !important;
     }
 }
 
