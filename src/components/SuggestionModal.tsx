@@ -198,11 +198,11 @@ export default function SuggestionModal({
                         <h6>Thông tin người muốn thêm:</h6>
 
                         <InputGroup className="mb-2">
-                            <InputGroup.Text>Họ tên *</InputGroup.Text>
+                            <InputGroup.Text>Tên *</InputGroup.Text>
                             <Form.Control
                                 value={newMember.name}
                                 onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                                placeholder="Nhập họ tên"
+                                placeholder="Tên thường gọi-Tên trong khai sinh-Tên ở nhà"
                             />
                         </InputGroup>
 
