@@ -1,0 +1,34 @@
+/* ===== MEMBER CARD & AVATAR ===== */
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 3px;
+    right: 5px;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.status-indicator.alive {
+    background-color: #28a745;
+}
+
+.status-indicator.deceased {
+    background-color: #000;
+}
+
+/* Spouse section */
+.spouse-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.spouse-item {
+    background: #fff;
+}

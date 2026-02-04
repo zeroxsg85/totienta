@@ -1,0 +1,280 @@
+/* ===== HOMEPAGE ===== */
+.homepage {
+    margin-top: 8px;
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+}
+
+.hero-carousel .carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+
+.hero-slide {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 10px;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 700px;
+}
+
+.hero-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.hero-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.hero-subtitle {
+    font-size: 1.4rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    color: #777;
+    line-height: 1.6;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset;
+}
+
+.hero-cta {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+}
+
+.cta-button {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.cta-button-outline {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+}
+
+/* Carousel Controls */
+.hero-carousel .carousel-control-prev,
+.hero-carousel .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    margin: 0 15px;
+}
+
+.hero-carousel .carousel-indicators {
+    bottom: 20px;
+}
+
+.hero-carousel .carousel-indicators button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+/* Features Section */
+.features-section {
+    padding: 80px 20px;
+    background: #fff;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+.feature-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.feature-card .card-body {
+    padding: 10px;
+    min-height: 0;
+}
+
+.feature-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.6;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.feature-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.feature-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* How To Section */
+.howto-section {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+}
+
+.step-card {
+    text-align: center;
+    padding: 30px 20px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #af8600 0%, #d4a600 100%);
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.step-card h5 {
+    font-weight: 600;
+    color: #333;
+}
+
+.step-card p {
+    color: #666;
+    margin: 0;
+}
+
+/* Quote Section */
+.quote-section {
+    padding: 20px 10px;
+    background: linear-gradient(135deg, #af8600 0%, #8a6b00 100%);
+    text-align: center;
+}
+
+.quote-text {
+    font-size: 1.5rem;
+    color: #fff;
+    font-style: italic;
+    line-height: 1.8;
+    margin: 0;
+}
+
+.quote-brand {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-slide {
+        min-height: 60vh;
+    }
+
+    .hero-icon {
+        font-size: 60px;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .hero-cta {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .cta-button,
+    .cta-button-outline {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+    }
+
+    .quote-text {
+        font-size: 1.2rem;
+    }
+}

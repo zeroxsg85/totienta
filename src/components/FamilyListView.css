@@ -1,0 +1,160 @@
+/* ===== FAMILY LIST VIEW ===== */
+.family-list-view {
+    padding: 10px;
+}
+
+.list-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.breadcrumb-item {
+    color: #007bff;
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+.breadcrumb-item:hover {
+    background: #e9ecef;
+}
+
+.breadcrumb-item.active {
+    color: #333;
+    font-weight: 600;
+    cursor: default;
+}
+
+.breadcrumb-item.active:hover {
+    background: transparent;
+}
+
+.breadcrumb-separator {
+    margin: 0 5px;
+    color: #999;
+    font-size: 10px;
+}
+
+.list-members {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.member-card-list {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.member-card-list:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-card-list .card-body {
+    padding: 12px 15px;
+}
+
+.member-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 20px;
+}
+
+.member-icon.male {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.member-icon.female {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.member-info {
+    cursor: pointer;
+}
+
+.member-name-list {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+}
+
+.member-meta {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.member-add-btn {
+    padding: 8px 12px;
+    color: #28a745;
+    cursor: pointer;
+    font-size: 18px;
+    transition: color 0.2s;
+}
+
+.member-add-btn:hover {
+    color: #1e7e34;
+}
+
+.member-children-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f0f7ff;
+    border-radius: 20px;
+    color: #1976d2;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.member-children-btn:hover {
+    background: #1976d2;
+    color: white;
+}
+
+.children-count {
+    font-weight: 500;
+}
+
+/* Search info */
+.search-info {
+    padding: 10px 12px;
+    background: #fff3cd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #856404;
+}
+
+/* View toggle */
+.view-toggle {
+    display: flex;
+    gap: 5px;
+}
+
+.view-toggle .btn {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.view-toggle .btn.active {
+    background: #af8600;
+    border-color: #af8600;
+    color: white;
+}

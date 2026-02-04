@@ -7,6 +7,7 @@ import { faIdCard, faCamera, faSync } from '@fortawesome/free-solid-svg-icons';
 import { formatDate } from '@/lib/formatDate';
 import API from '@/lib/api';
 import { Member } from '@/types';
+import './MemberCard.css';
 
 interface MemberCardProps {
   show: boolean;
@@ -185,10 +186,10 @@ export default function MemberCard({
             {member.maritalStatus === 'single'
               ? 'Độc thân'
               : member.maritalStatus === 'married'
-              ? 'Đã kết hôn'
-              : member.maritalStatus === 'divorced'
-              ? 'Ly hôn'
-              : 'Góa'}
+                ? 'Đã kết hôn'
+                : member.maritalStatus === 'divorced'
+                  ? 'Ly hôn'
+                  : 'Góa'}
             <br />
             {member.phoneNumber && (
               <>

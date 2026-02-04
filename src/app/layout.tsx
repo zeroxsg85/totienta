@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-import '@/styles/globals.css';
+import './globals.css';
 
 // FontAwesome config
 import { config } from '@fortawesome/fontawesome-svg-core';

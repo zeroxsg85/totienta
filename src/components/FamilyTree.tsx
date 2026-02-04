@@ -4,6 +4,7 @@ import { useState, forwardRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { Member } from '@/types';
+import './FamilyTree.css';
 
 const levelColors: string[] = ['blue', 'red', 'green', 'navy', 'darkred'];
 

@@ -8,6 +8,7 @@ import { Member, Spouse } from '@/types';
 import { toInputDateFormat } from '@/lib/formatDate';
 import SearchableSelect from './SearchableSelect';
 import SelectChildrenModal from './SelectChildrenModal';
+import '@/components/Modals.css';
 
 const EMPTY_SPOUSE: Spouse = {
   name: '',

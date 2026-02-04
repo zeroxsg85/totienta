@@ -5,6 +5,7 @@ import { Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faHome, faMale, faFemale, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { Member } from '@/types';
+import './FamilyListView.css';
 
 interface FamilyListViewProps {
     familyTree: Member[];

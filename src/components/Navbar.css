@@ -1,0 +1,115 @@
+/* ===== NAVBAR ===== */
+.navbar-nav .nav-item.active .nav-link {
+    font-weight: bold;
+    color: #af8600 !important;
+    border-bottom: 2px solid #af8600;
+}
+
+.navbar-container {
+    position: relative;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.navbar-brand .brand-text {
+    font-weight: 600;
+    color: #af8600;
+    font-size: 18px;
+}
+
+/* Notification badge */
+.notification-badge {
+    position: absolute;
+    top: 0;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        height: 56px !important;
+        padding: 0 !important;
+    }
+
+    .navbar-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 1;
+        white-space: nowrap;
+    }
+
+    .navbar-brand .brand-text {
+        font-size: 16px;
+        font-weight: bold;
+        display: block;
+    }
+
+    .navbar-logo-mobile {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+
+    .navbar-toggler {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        border: none;
+        padding: 5px;
+    }
+
+    .navbar-collapse {
+        position: absolute;
+        top: 56px;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1000;
+    }
+
+    .navbar-collapse .navbar-nav {
+        flex-direction: column;
+    }
+
+    .navbar-collapse .nav-item {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .navbar-collapse .nav-link {
+        padding: 12px 10px;
+    }
+}
+
+@media (min-width: 769px) {
+    .navbar-logo-mobile {
+        display: none;
+    }
+}
