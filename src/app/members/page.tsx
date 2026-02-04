@@ -168,7 +168,6 @@ export default function MembersPage(): JSX.Element | null {
     setTreeKey((prev) => prev + 1);
   };
 
-  // Xuất ảnh cây gia phả
   const handleExportImage = async (): Promise<void> => {
     if (!treeRef.current) {
       toast.error('Không tìm thấy cây gia phả!');
@@ -177,7 +176,6 @@ export default function MembersPage(): JSX.Element | null {
 
     setExporting(true);
     try {
-      // Lấy kích thước thực của cây (bao gồm phần bị ẩn)
       const element = treeRef.current;
       const originalStyle = {
         overflow: element.style.overflow,
@@ -185,29 +183,104 @@ export default function MembersPage(): JSX.Element | null {
         height: element.style.height,
       };
 
-      // Tạm thời bỏ giới hạn để lấy full size
       element.style.overflow = 'visible';
       element.style.width = 'auto';
       element.style.height = 'auto';
 
-      const canvas = await html2canvas(element, {
+      const treeCanvas = await html2canvas(element, {
         scrollX: 0,
         scrollY: -window.scrollY,
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
         width: element.scrollWidth,
         height: element.scrollHeight,
+        backgroundColor: '#ffffff',
       } as any);
 
-      // Khôi phục style
       element.style.overflow = originalStyle.overflow;
       element.style.width = originalStyle.width;
       element.style.height = originalStyle.height;
 
+      const padding = 40;
+      const borderWidth = 3;
+      const watermarkHeight = 30;
+
+      const finalWidth = treeCanvas.width + (padding * 2) + (borderWidth * 2);
+      const finalHeight = treeCanvas.height + (padding * 2) + (borderWidth * 2) + watermarkHeight;
+
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width = finalWidth;
+      finalCanvas.height = finalHeight;
+      const ctx = finalCanvas.getContext('2d')!;
+
+      // Background trắng
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, finalWidth, finalHeight);
+
+      // Border ngoài
+      ctx.strokeStyle = '#8B4513';
+      ctx.lineWidth = borderWidth;
+      ctx.strokeRect(borderWidth / 2, borderWidth / 2, finalWidth - borderWidth, finalHeight - borderWidth);
+
+      // Border trong
+      ctx.strokeStyle = '#D2691E';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(borderWidth + 5, borderWidth + 5, finalWidth - (borderWidth * 2) - 10, finalHeight - (borderWidth * 2) - 10);
+
+      // Vẽ cây gia phả
+      ctx.drawImage(treeCanvas, padding + borderWidth, padding + borderWidth);
+
+      // Vẽ logo + text
+      const logo = new Image();
+      logo.src = '/logo.png';
+
+      await new Promise<void>((resolve) => {
+        logo.onload = () => {
+          const logoHeight = 68;
+          const logoWidth = (logo.width / logo.height) * logoHeight;
+
+          ctx.drawImage(
+            logo,
+            padding + borderWidth,
+            finalHeight - borderWidth - logoHeight - 8,
+            logoWidth,
+            logoHeight
+          );
+
+          ctx.fillStyle = '#8B4513';
+          ctx.font = 'bold 16px Arial';
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'left';
+          ctx.fillText(
+            'ToTienTa.com',
+            padding + borderWidth + logoWidth + 8,
+            finalHeight - borderWidth - (logoHeight / 2) - 8
+          );
+          resolve();
+        };
+        logo.onerror = () => {
+          ctx.fillStyle = '#8B4513';
+          ctx.font = 'bold 32px Arial';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText('ToTienTa.com', padding + borderWidth, finalHeight - borderWidth - 10);
+          resolve();
+        };
+      });
+
+      // Ngày xuất góc dưới phải
+      ctx.fillStyle = '#999999';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      const today = new Date().toLocaleDateString('vi-VN');
+      ctx.fillText(`Ngày: ${today}`, finalWidth - padding - borderWidth, finalHeight - borderWidth - 10);
+
+      // Download
       const link = document.createElement('a');
-      link.download = `gia-pha-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.download = `ToTienTa.com-Gia-pha-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = finalCanvas.toDataURL('image/png');
       link.click();
+
       toast.success('Đã xuất ảnh thành công!');
     } catch (error) {
       console.error('Lỗi xuất ảnh:', error);
@@ -284,15 +357,6 @@ export default function MembersPage(): JSX.Element | null {
         <>
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
-            {/* <Button
-              variant="outline-primary"
-              size="sm"
-              onClick={handleExpandAll}
-              title="Mở rộng"
-            >
-              <FontAwesomeIcon icon={faExpand} />
-            </Button> */}
-
             <Button
               variant="outline-success"
               size="sm"
@@ -364,6 +428,17 @@ export default function MembersPage(): JSX.Element | null {
           </div>
           {/* Mobile Content */}
           <div className="mobile-content-area">
+            {/* Hidden FamilyTree for export - luôn render nhưng ẩn */}
+            <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+              <FamilyTree
+                ref={treeRef}
+                familyTree={familyTree}
+                onMemberClick={() => { }}
+                isEditable={false}
+                searchTerm={searchTerm}
+                hideFemale={hideFemale}
+              />
+            </div>
             {familyTree && familyTree.length > 0 ? (
               viewMode === 'tree' ? (
                 <FamilyTree
