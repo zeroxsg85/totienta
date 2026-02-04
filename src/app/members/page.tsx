@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import FamilyListView from '@/components/FamilyListView';
+import useDeviceType from '@/hooks/useDeviceType';
 import {
   faPlusCircle,
   faCloudUploadAlt,
@@ -36,6 +38,13 @@ export default function MembersPage(): JSX.Element | null {
   const [treeKey, setTreeKey] = useState<number>(0);
   const [exporting, setExporting] = useState<boolean>(false);
   const [hideFemale, setHideFemale] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
+  const { isMobile } = useDeviceType();
+
+  // Auto switch view theo device
+  useEffect(() => {
+    setViewMode(isMobile ? 'list' : 'tree');
+  }, [isMobile]);
 
   const [showMemberCard, setShowMemberCard] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -269,129 +278,255 @@ export default function MembersPage(): JSX.Element | null {
 
   return (
     <div
-      className="container fluid m-1 mt-5"
+      className="container-fluid p-0"
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* Toolbar */}
-      <div className="tree-toolbar">
-        <InputGroup className="search-box">
-          <InputGroup.Text>
-            <FontAwesomeIcon icon={faSearch} />
-          </InputGroup.Text>
-          <Form.Control
-            type="text"
-            placeholder="Tìm thành viên..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
-            <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
-              ✕
+      {/* ===== MOBILE LAYOUT ===== */}
+      {isMobile && (
+        <>
+          {/* Mobile Toolbar */}
+          <div className="mobile-toolbar">
+            {/* <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={handleExpandAll}
+              title="Mở rộng"
+            >
+              <FontAwesomeIcon icon={faExpand} />
+            </Button> */}
+
+            <Button
+              variant="outline-success"
+              size="sm"
+              onClick={handleExportImage}
+              disabled={exporting}
+              title="Xuất ảnh"
+            >
+              <FontAwesomeIcon icon={faCamera} />
             </Button>
-          )}
-        </InputGroup>
 
-        <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={handleExpandAll}
-          title="Mở rộng tất cả"
-          className="ms-2"
-        >
-          <FontAwesomeIcon icon={faExpand} /> Mở rộng
-        </Button>
+            <Button
+              variant={hideFemale ? 'warning' : 'outline-warning'}
+              size="sm"
+              onClick={() => setHideFemale(!hideFemale)}
+              title={hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+            >
+              👩
+            </Button>
 
-        <Button
-          variant="outline-success"
-          size="sm"
-          onClick={handleExportImage}
-          disabled={exporting}
-          title="Xuất ảnh"
-          className="ms-2"
-        >
-          <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
-        </Button>
-        <Button
-          variant={hideFemale ? "warning" : "outline-warning"}
-          size="sm"
-          onClick={() => setHideFemale(!hideFemale)}
-          title={hideFemale ? "Hiện nữ" : "Ẩn nữ"}
-          className="ms-2"
-        >
-          👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
-        </Button>
-      </div>
+            <Button
+              variant={viewMode === 'tree' ? 'secondary' : 'outline-secondary'}
+              size="sm"
+              onClick={() => setViewMode('tree')}
+            >
+              🌳
+            </Button>
 
-      {/* Thống kê */}
-      {allMembers.length > 0 && (
-        <div className="tree-stats">
-          <span>📊 <strong>{stats.totalGenerations}</strong> đời</span>
-          <span>👥 <strong>{stats.total}</strong> thành viên</span>
-          <span>👨 <strong>{stats.male}</strong> nam</span>
-          <span>👩 <strong>{stats.female}</strong> nữ</span>
-          <span>💚 <strong>{stats.alive}</strong> còn sống</span>
-          <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
-        </div>
-      )}
-
-      <section className="list-tree">
-        {familyTree.length > 0 ? (
-          <FamilyTree
-            key={treeKey}
-            ref={treeRef}
-            familyTree={familyTree}
-            onMemberClick={handleMemberClick}
-            onAddMember={handleAddClick}
-            isEditable={true}
-            searchTerm={searchTerm}
-            hideFemale={hideFemale}
-          />
-        ) : (
-          <div className="text-center mt-5 pt-4">
-            <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>
-            <Button variant="primary" onClick={() => setShowAddModal(true)}>
-              <FontAwesomeIcon icon={faPlusCircle} /> Thêm Thành Viên
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'outline-secondary'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              📋
             </Button>
           </div>
-        )}
 
-        {/* View Code Section */}
-        <div className="viewCode">
-          {viewCode ? (
-            <>
-              <span onClick={updateViewCode} style={{ cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faCloudUploadAlt} className="text-primary" /> Cập
-                nhật mã.
-              </span>{' '}
-              <span onClick={generateViewCode} style={{ cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faSyncAlt} className="me-1 text-success" />
-                Đổi mã:
-              </span>{' '}
-              <strong>{viewCode}</strong>
-              <small
-                style={{ cursor: 'pointer' }}
-                onClick={copyToClipboard}>
-                <FontAwesomeIcon
-                  icon={faCopy}
-                  className="ms-2 text-secondary"
-                  title="Sao chép URL"
-                /> Copy URL
-              </small>
-            </>
-          ) : (
-            <span>
-              <FontAwesomeIcon
-                icon={faPlusCircle}
-                onClick={generateViewCode}
-                className="me-1 text-success"
-                style={{ cursor: 'pointer' }}
-              />
-              Tạo mã
-            </span>
+          {/* Mobile Stats */}
+          {allMembers.length > 0 && (
+            <div className="mobile-stats">
+              <div className="stat-item">
+                <span className="stat-value">{stats.totalGenerations}</span>
+                <span className="stat-label">đời</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.total}</span>
+                <span className="stat-label">người</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.male}</span>
+                <span className="stat-label">nam</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.female}</span>
+                <span className="stat-label">nữ</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.alive}</span>
+                <span className="stat-label">sống</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.deceased}</span>
+                <span className="stat-label">mất</span>
+              </div>
+            </div>
           )}
-        </div>
-      </section>
 
+          {/* Mobile Search */}
+          <div className="mobile-search">
+            <InputGroup>
+              <InputGroup.Text>
+                <FontAwesomeIcon icon={faSearch} />
+              </InputGroup.Text>
+              <Form.Control
+                type="text"
+                placeholder="Tìm thành viên..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
+                  ✕
+                </Button>
+              )}
+            </InputGroup>
+          </div>
+          {/* Mobile Content */}
+          <div className="mobile-content-area">
+            {familyTree && familyTree.length > 0 ? (
+              viewMode === 'tree' ? (
+                <FamilyTree
+                  key={treeKey}
+                  ref={treeRef}
+                  familyTree={familyTree}
+                  onMemberClick={handleMemberClick}
+                  isEditable={false}
+                  searchTerm={searchTerm}
+                  hideFemale={hideFemale}
+                />
+              ) : (
+                <FamilyListView
+                  familyTree={familyTree}
+                  onMemberClick={handleMemberClick}
+                  onAddMember={handleAddClick}
+                  isEditable={true}
+                  searchTerm={searchTerm}
+                  hideFemale={hideFemale}
+                />
+              )
+            ) : (
+              <div className="text-center mt-3">
+                <p className="text-muted">Chưa có thành viên nào.</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ===== DESKTOP LAYOUT ===== */}
+      {!isMobile && (
+        <>
+          {/* Desktop Toolbar */}
+          <div className="tree-toolbar">
+            <InputGroup className="search-box">
+              <InputGroup.Text>
+                <FontAwesomeIcon icon={faSearch} />
+              </InputGroup.Text>
+              <Form.Control
+                type="text"
+                placeholder="Tìm thành viên..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
+                  ✕
+                </Button>
+              )}
+            </InputGroup>
+
+            <div className="toolbar-buttons">
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={handleExpandAll}
+                title="Mở rộng tất cả"
+              >
+                <FontAwesomeIcon icon={faExpand} /> Mở rộng
+              </Button>
+
+              <Button
+                variant="outline-success"
+                size="sm"
+                onClick={handleExportImage}
+                disabled={exporting}
+                title="Xuất ảnh"
+              >
+                <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
+              </Button>
+
+              <Button
+                variant={hideFemale ? 'warning' : 'outline-warning'}
+                size="sm"
+                onClick={() => setHideFemale(!hideFemale)}
+                title={hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+              >
+                👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+              </Button>
+            </div>
+
+            <div className="view-toggle">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className={viewMode === 'tree' ? 'active' : ''}
+                onClick={() => setViewMode('tree')}
+              >
+                🌳 Cây
+              </Button>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className={viewMode === 'list' ? 'active' : ''}
+                onClick={() => setViewMode('list')}
+              >
+                📋 Danh sách
+              </Button>
+            </div>
+          </div>
+
+          {/* Desktop Stats */}
+          {allMembers.length > 0 && (
+            <div className="tree-stats">
+              <span>📊 <strong>{stats.totalGenerations}</strong> đời</span>
+              <span>👥 <strong>{stats.total}</strong> thành viên</span>
+              <span>👨 <strong>{stats.male}</strong> nam</span>
+              <span>👩 <strong>{stats.female}</strong> nữ</span>
+              <span>💚 <strong>{stats.alive}</strong> còn sống</span>
+              <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
+            </div>
+          )}
+          {/* Desktop Content */}
+          <section className="list-tree">
+            {familyTree && familyTree.length > 0 ? (
+              viewMode === 'tree' ? (
+                <FamilyTree
+                  key={treeKey}
+                  ref={treeRef}
+                  familyTree={familyTree}
+                  onMemberClick={handleMemberClick}
+                  onAddMember={handleAddClick}
+                  isEditable={true}
+                  searchTerm={searchTerm}
+                  hideFemale={hideFemale}
+                />
+              ) : (
+                <FamilyListView
+                  familyTree={familyTree}
+                  onMemberClick={handleMemberClick}
+                  searchTerm={searchTerm}
+                  hideFemale={hideFemale}
+                />
+              )
+            ) : (
+              <div className="text-center mt-5 pt-4">
+                <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {/* Modals - giữ nguyên */}
       <MemberCard
         show={showMemberCard}
         onHide={() => setShowMemberCard(false)}

@@ -1,5 +1,5 @@
 'use client';
-
+//src\hooks\useDeviceType.ts
 import { useState, useEffect } from 'react';
 
 interface DeviceType {

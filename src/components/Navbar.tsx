@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudSun, faSignInAlt, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faSignInAlt, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '@/contexts/AuthContext';
+import useDeviceType from '@/hooks/useDeviceType';
 import API from '@/lib/api';
 
 export default function Navbar(): JSX.Element {
   const { isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
+  const { isMobile } = useDeviceType();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [pendingCount, setPendingCount] = useState<number>(0);
 
@@ -45,7 +48,23 @@ export default function Navbar(): JSX.Element {
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-      <div className="container-fluid">
+      <div className="container-fluid navbar-container">
+        {/* Mobile: Logo bên trái */}
+        {isMobile && (
+          <Link href="/" className="navbar-logo-mobile" onClick={closeMenu}>
+            <Image src="/totienta.logo.png" alt="Logo" width={32} height={32} />
+          </Link>
+        )}
+
+        {/* Brand - căn giữa trên mobile */}
+        <Link href="/" className="navbar-brand" onClick={closeMenu}>
+          {!isMobile && (
+            <Image src="/totienta.logo.png" alt="Logo" width={36} height={36} />
+          )}
+          <span className="brand-text">ToTienTa.com</span>
+        </Link>
+
+        {/* Toggle button */}
         <button
           className="navbar-toggler"
           type="button"
@@ -55,13 +74,9 @@ export default function Navbar(): JSX.Element {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        <div className={`collapse ms-2 navbar-collapse ${isOpen ? 'show' : ''}`}>
+        {/* Menu */}
+        <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
           <ul className="navbar-nav">
-            <li className="nav-item">
-              <Link className="navbar-brand" href="/" onClick={closeMenu}>
-                <FontAwesomeIcon icon={faCloudSun} className="text-warning" />
-              </Link>
-            </li>
             <li className={`nav-item ${pathname === '/' ? 'active' : ''}`}>
               <Link className="nav-link" href="/" onClick={closeMenu}>
                 Trang Chủ
