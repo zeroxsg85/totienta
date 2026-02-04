@@ -23,7 +23,7 @@ export default function FamilyListView({
     searchTerm = '',
     hideFemale = false,
 }: FamilyListViewProps): JSX.Element {
-    const [path, setPath] = useState<{ id: string; name: string }[]>([]);
+    const [path, setPath] = useState<{ id: string; name: string; gender?: 'male' | 'female' }[]>([]);
     const [searchResults, setSearchResults] = useState<Member[]>([]);
     const [isSearching, setIsSearching] = useState<boolean>(false);
 
@@ -34,14 +34,18 @@ export default function FamilyListView({
         return parts[2] ? `${parts[0]}-${parts[2]}` : parts[0];
     };
 
+    // Thêm interface
+    interface MemberWithParent extends Member {
+        parentGender?: 'male' | 'female';
+    }
     // Flatten toàn bộ cây
-    const flattenTree = (members: Member[]): Member[] => {
-        let result: Member[] = [];
+    const flattenTree = (members: Member[], parentGender?: 'male' | 'female'): MemberWithParent[] => {
+        let result: MemberWithParent[] = [];
         for (const m of members) {
-            result.push(m);
+            result.push({ ...m, parentGender });
             const children = m.children as Member[];
             if (children && children.length > 0) {
-                result = result.concat(flattenTree(children));
+                result = result.concat(flattenTree(children, m.gender));
             }
         }
         return result;
@@ -111,12 +115,18 @@ export default function FamilyListView({
     // Navigate vào con của member
     const navigateToChildren = (member: Member, e: React.MouseEvent) => {
         e.stopPropagation();
-        setPath([...path, { id: member._id, name: member.name }]);
+        setPath([...path, { id: member._id, name: member.name, gender: member.gender }]);
         // Tự động tắt search mode khi navigate
         if (isSearching) {
             setIsSearching(false);
             setSearchResults([]);
         }
+    };
+
+    // Khi render, check parent gender từ path
+    const getParentGender = (): 'male' | 'female' | undefined => {
+        if (path.length === 0) return undefined; // root level
+        return path[path.length - 1].gender;
     };
 
     // Navigate về level nào đó trong breadcrumb
@@ -139,19 +149,20 @@ export default function FamilyListView({
     };
 
     // Kiểm tra có thể thêm con cho member này không
-    const canAddChild = (member: Member): boolean => {
-        // Không thêm con cho nữ (con sẽ thuộc dòng họ khác)
-        if (member.gender === 'female') return false;
-        // Không thêm con cho người độc thân đã mất
+    const canAddChild = (member: MemberWithParent): boolean => {
+        // Nếu parent là nữ → không được thêm con (đã khác họ)
+        if (member.parentGender === 'female') return false;
+        // Người độc thân đã mất → không thêm con
         if (member.maritalStatus === 'single' && !member.isAlive) return false;
         return true;
     };
 
     // Render một member card
-    const renderMemberCard = (member: Member) => {
+    const renderMemberCard = (member: MemberWithParent) => {
         const childCount = countChildren(member);
         const hasChildren = childCount > 0;
-        const showAddButton = isEditable && canAddChild(member);
+        const parentGender = member.parentGender ?? getParentGender();
+        const showAddButton = isEditable && canAddChild({ ...member, parentGender });
 
         return (
             <Card key={member._id} className="member-card-list">
