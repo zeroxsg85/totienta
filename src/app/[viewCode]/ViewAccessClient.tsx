@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faExpand, faCamera, faLink, faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faExpand, faCamera, faLink, faLightbulb, faPhoneAlt } from '@fortawesome/free-solid-svg-icons';
 import html2canvas from 'html2canvas';
 import { toast } from 'react-toastify';
 import API from '@/lib/api';
@@ -15,6 +15,7 @@ import SuggestionModal from '@/components/SuggestionModal';
 import Loading from '@/components/Loading';
 import useDeviceType from '@/hooks/useDeviceType';
 import { Member } from '@/types';
+import Link from 'next/link';
 
 interface ViewAccessClientProps {
   viewCode: string;
@@ -223,6 +224,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
       </div>
     );
   }
+
   return (
     <div className="container-fluid p-0" onContextMenu={(e) => e.preventDefault()}>
       {/* ===== MOBILE LAYOUT ===== */}
@@ -230,14 +232,6 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         <>
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
-            {/* <Button
-              variant="outline-primary"
-              size="sm"
-              onClick={handleExpandAll}
-            >
-              <FontAwesomeIcon icon={faExpand} />
-            </Button> */}
-
             <Button
               variant="outline-success"
               size="sm"
@@ -262,22 +256,6 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
               className="btn-suggest-pulse"
             >
               💡
-            </Button>
-
-            <Button
-              variant={viewMode === 'tree' ? 'secondary' : 'outline-secondary'}
-              size="sm"
-              onClick={() => setViewMode('tree')}
-            >
-              🌳
-            </Button>
-
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'outline-secondary'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              📋
             </Button>
           </div>
 
@@ -419,27 +397,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
                 <FontAwesomeIcon icon={faLightbulb} /> Đề xuất
               </Button>
             </div>
-
-            <div className="view-toggle">
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                className={viewMode === 'tree' ? 'active' : ''}
-                onClick={() => setViewMode('tree')}
-              >
-                🌳 Cây
-              </Button>
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                className={viewMode === 'list' ? 'active' : ''}
-                onClick={() => setViewMode('list')}
-              >
-                📋 Danh sách
-              </Button>
-            </div>
           </div>
-
           {/* Desktop Stats */}
           {allMembers.length > 0 && (
             <div className="tree-stats">
@@ -481,6 +439,32 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
           </section>
         </>
       )}
+
+      <footer className="share-footer">
+        <div className="share-section d-flex justify-content-between">
+          {isMobile ?
+            <>
+              <div id="copyright">
+                <small>© {new Date().getFullYear()} ToTienTa.com All rights reserved.</small>
+              </div>
+              <div id="support">
+                <Link href="tel:+84327691726" className="text-decoration-none">
+                  <FontAwesomeIcon icon={faPhoneAlt} />
+                </Link>
+              </div>
+            </> :
+            <>
+              <div id="copyright">
+                © {new Date().getFullYear()} <b>ToTienTa.com</b>. All rights reserved.
+              </div>
+              <div id="support">
+                <Link href="tel:+84327691726" className="text-decoration-none">
+                  <FontAwesomeIcon icon={faPhoneAlt} /> Hỗ trợ: 0327.691.726
+                </Link>
+              </div>
+            </>}
+        </div>
+      </footer>
 
       {/* Modals */}
       <MemberCard

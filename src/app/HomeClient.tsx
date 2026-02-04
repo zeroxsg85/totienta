@@ -132,7 +132,7 @@ export default function HomeClient(): JSX.Element {
                         <Link href="/members">
                             <Button variant="primary" size="lg" className="cta-button">
                                 <FontAwesomeIcon icon={faTree} className="me-2" />
-                                Xem cây gia phả của bạn
+                                Cây gia phả của bạn
                                 <FontAwesomeIcon icon={faArrowRight} className="ms-2" />
                             </Button>
                         </Link>
@@ -144,11 +144,6 @@ export default function HomeClient(): JSX.Element {
                                     <FontAwesomeIcon icon={faArrowRight} className="ms-2" />
                                 </Button>
                             </Link>
-                            {/* <Link href="/login">
-                                <Button variant="outline-primary" size="lg" className="cta-button-outline">
-                                    Đăng nhập
-                                </Button>
-                            </Link> */}
                             <Link href="/04BAAF10" target='_blank'>
                                 <Button variant="outline-primary" size="lg" className="cta-button-outline">
                                     Xem Họ Hoàng-LẠNG SƠN

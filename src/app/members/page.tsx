@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FamilyListView from '@/components/FamilyListView';
 import useDeviceType from '@/hooks/useDeviceType';
 import {
-  faPlusCircle,
   faCloudUploadAlt,
   faSyncAlt,
   faCopy,
@@ -116,7 +115,6 @@ export default function MembersPage(): JSX.Element | null {
       console.error('Lỗi khi lấy dữ liệu:', err);
     } finally {
       setLoading(false);
-      console.log(allMembers);
     }
   };
 
@@ -313,22 +311,6 @@ export default function MembersPage(): JSX.Element | null {
             >
               👩
             </Button>
-
-            <Button
-              variant={viewMode === 'tree' ? 'secondary' : 'outline-secondary'}
-              size="sm"
-              onClick={() => setViewMode('tree')}
-            >
-              🌳
-            </Button>
-
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'outline-secondary'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              📋
-            </Button>
           </div>
 
           {/* Mobile Stats */}
@@ -463,25 +445,6 @@ export default function MembersPage(): JSX.Element | null {
                 👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
               </Button>
             </div>
-
-            <div className="view-toggle">
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                className={viewMode === 'tree' ? 'active' : ''}
-                onClick={() => setViewMode('tree')}
-              >
-                🌳 Cây
-              </Button>
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                className={viewMode === 'list' ? 'active' : ''}
-                onClick={() => setViewMode('list')}
-              >
-                📋 Danh sách
-              </Button>
-            </div>
           </div>
 
           {/* Desktop Stats */}
@@ -524,6 +487,33 @@ export default function MembersPage(): JSX.Element | null {
             )}
           </section>
         </>
+      )}
+
+      {/* Footer - Share Section (chỉ hiện khi đăng nhập) */}
+      {isAuthenticated && (
+        <footer className="share-footer">
+          <div className="share-section d-flex justify-content-between">
+            {viewCode ?
+              <Button variant='outline-secondary' disabled>
+                <strong>{viewCode}</strong>
+              </Button>
+              : ""}
+            {!viewCode ? (
+              <Button variant="primary" size="sm" onClick={generateViewCode}>
+                <FontAwesomeIcon icon={faCloudUploadAlt} /> Tạo URL chia sẻ
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline-dark" size="sm" onClick={copyToClipboard} title="Sao chép">
+                  <FontAwesomeIcon icon={faCopy} /> CopyURL
+                </Button>
+                <Button variant="outline-primary" size="sm" onClick={updateViewCode} title="Cập nhật mã">
+                  <FontAwesomeIcon icon={faSyncAlt} /> Cập nhật mã
+                </Button>
+              </>
+            )}
+          </div>
+        </footer>
       )}
 
       {/* Modals - giữ nguyên */}
