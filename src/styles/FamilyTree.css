@@ -1,4 +1,4 @@
-/* ===== FAMILY TREE STYLES ===== */
+/* Tree styles*/
 .list-tree {
     margin-top: 68px;
     --tree-clr: #af8600;
@@ -10,64 +10,56 @@
 }
 
 .list-tree ul {
-    display: block;
-    list-style: none !important;
-    padding-left: 0;
-    margin: 0;
+    display: grid;
+    list-style: none;
     font-size: var(--tree-font-size);
 }
 
 .list-tree li {
-    display: block;
-    position: relative;
     line-height: var(--tree-item-height);
-    padding-left: var(--tree-offset);
-    margin-left: var(--tree-offset);
+    padding-inline-start: var(--tree-offset);
     border-left: var(--tree-thickness) var(--tree-style) var(--tree-clr);
-    list-style: none !important;
+    position: relative;
+    text-indent: 0.5rem;
 }
 
 .list-tree li:last-child {
-    border-left-color: transparent;
+    border-color: transparent;
 }
 
-/* Nhánh ngang */
 .list-tree li::before {
     content: '';
-    display: block;
     position: absolute;
-    top: 0;
+    top: calc(var(--tree-item-height) / 2 * -0.7 * var(--tree-font-size) + var(--tree-thickness));
     left: calc(var(--tree-thickness) * -1);
-    width: var(--tree-offset);
-    height: calc(var(--tree-item-height) * 0.5em + 0.5em);
+    width: calc(var(--tree-offset) + var(--tree-thickness) * 2);
+    height: calc(var(--tree-item-height) * var(--tree-font-size));
     border-left: var(--tree-thickness) var(--tree-style) var(--tree-clr);
     border-bottom: var(--tree-thickness) var(--tree-style) var(--tree-clr);
-    border-bottom-left-radius: 4px;
 }
 
-/* Chấm tròn */
 .list-tree li::after {
     content: '';
-    display: block;
     position: absolute;
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background-color: var(--tree-clr);
-    top: calc(var(--tree-item-height) * 0.5em + 0.5em - 3px);
-    left: calc(var(--tree-offset) - 3px);
+    top: calc(var(--tree-item-height) / 2 * 1.3rem);
+    left: var(--tree-offset);
+    translate: calc(var(--tree-thickness) * -1) calc(var(--tree-thickness) * -1);
 }
 
-/* Root level không có nhánh */
-.list-tree>ul>li {
-    border-left: none;
-    margin-left: 0;
-    padding-left: 0;
+.add-member-icon {
+    cursor: pointer;
+    color: #007bff;
+    font-size: 14px;
+    margin-left: 8px;
+    transition: color 0.3s ease-in-out;
 }
 
-.list-tree>ul>li::before,
-.list-tree>ul>li::after {
-    display: none;
+.add-member-icon:hover {
+    color: #0056b3;
 }
 
 /* Member name */
@@ -81,14 +73,6 @@
 .list-tree li .member-name.deceased {
     font-weight: normal;
     color: black !important;
-}
-
-/* Search highlight */
-.member-name.highlighted {
-    background-color: #c9b061;
-    padding: 2px 6px;
-    margin: -2px -6px;
-    border-radius: 4px;
 }
 
 /* Collapse button */
@@ -106,17 +90,20 @@
     color: #d4a600;
 }
 
-/* Add member icon */
-.add-member-icon {
-    cursor: pointer;
-    color: #007bff;
-    font-size: 14px;
-    margin-left: 8px;
-    transition: color 0.3s ease-in-out;
+/* Search highlight */
+.member-name.highlighted {
+    background-color: #c9b061;
+    padding: 2px 6px;
+    margin: -2px -6px;
+    border-radius: 4px;
 }
 
-.add-member-icon:hover {
-    color: #0056b3;
+.tree-stats span {
+    white-space: nowrap;
+}
+
+.tree-stats strong {
+    color: #af8600;
 }
 
 /* Family tree wrapper */
@@ -142,17 +129,22 @@
     font-size: 12px;
 }
 
-/* Stats */
-.tree-stats span {
-    white-space: nowrap;
+.spouse-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
 }
 
-.tree-stats strong {
-    color: #af8600;
+.spouse-item {
+    background: #fff;
 }
 
 @media (min-width: 769px) {
     .list-tree {
         margin-top: 10px !important;
     }
+}
+
+.list-tree {
+    padding-bottom: 70px;
 }

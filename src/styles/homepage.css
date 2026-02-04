@@ -3,7 +3,6 @@
     margin-top: 8px;
 }
 
-/* Hero Section */
 .hero-section {
     position: relative;
 }
@@ -94,7 +93,6 @@
     border-radius: 50px;
 }
 
-/* Carousel Controls */
 .hero-carousel .carousel-control-prev,
 .hero-carousel .carousel-control-next {
     width: 50px;
@@ -117,7 +115,6 @@
     margin: 0 5px;
 }
 
-/* Features Section */
 .features-section {
     padding: 80px 20px;
     background: #fff;
@@ -180,7 +177,6 @@
     margin-bottom: 10px;
 }
 
-/* How To Section */
 .howto-section {
     padding: 80px 20px;
     background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
@@ -218,7 +214,6 @@
     margin: 0;
 }
 
-/* Quote Section */
 .quote-section {
     padding: 20px 10px;
     background: linear-gradient(135deg, #af8600 0%, #8a6b00 100%);
@@ -239,7 +234,6 @@
     margin-top: 20px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .hero-slide {
         min-height: 60vh;

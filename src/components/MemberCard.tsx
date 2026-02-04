@@ -7,7 +7,7 @@ import { faIdCard, faCamera, faSync } from '@fortawesome/free-solid-svg-icons';
 import { formatDate } from '@/lib/formatDate';
 import API from '@/lib/api';
 import { Member } from '@/types';
-import './MemberCard.css';
+import '@/styles/MemberCard.css';
 
 interface MemberCardProps {
   show: boolean;

@@ -7,7 +7,7 @@ import { faPlusCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { Member, MemberFormData, Spouse } from '@/types';
 import SearchableSelect from './SearchableSelect';
 import SelectChildrenModal from './SelectChildrenModal';
-import '@/components/Modals.css';
+import '@/styles/Modals.css';
 
 interface AddMemberModalProps {
   show: boolean;

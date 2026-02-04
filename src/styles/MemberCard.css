@@ -1,4 +1,4 @@
-/* ===== MEMBER CARD & AVATAR ===== */
+/* ===== AVATAR ===== */
 .avatar-container {
     position: relative;
     display: inline-block;
@@ -20,15 +20,4 @@
 
 .status-indicator.deceased {
     background-color: #000;
-}
-
-/* Spouse section */
-.spouse-section {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-}
-
-.spouse-item {
-    background: #fff;
 }

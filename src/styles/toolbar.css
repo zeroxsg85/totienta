@@ -7,7 +7,7 @@
     background: #fff;
     border-bottom: 1px solid #dee2e6;
     position: sticky;
-    margin-top: 56px;
+    top: 56px;
     z-index: 100;
     align-items: center;
     width: 100%;
@@ -33,13 +33,12 @@
     background: #fff;
     border-bottom: 1px solid #dee2e6;
     position: sticky;
-    margin-top: 5px;
+    top: 106px;
     z-index: 100;
     align-items: center;
     width: 100%;
 }
 
-/* View code */
 .viewCode {
     position: relative;
     padding-top: 20px;
@@ -69,8 +68,10 @@
     width: 100%;
 }
 
-/* Padding bottom cho content */
-.mobile-content-area,
-.list-tree {
-    padding-bottom: 70px;
+@media (max-width: 768px) {
+
+    .tree-toolbar,
+    .tree-stats {
+        display: none !important;
+    }
 }

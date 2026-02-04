@@ -9,7 +9,7 @@ import { faSignInAlt, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-i
 import { useAuth } from '@/contexts/AuthContext';
 import useDeviceType from '@/hooks/useDeviceType';
 import API from '@/lib/api';
-import './Navbar.css';
+import '@/styles/Navbar.css';
 
 export default function Navbar(): JSX.Element {
   const { isAuthenticated, logout } = useAuth();

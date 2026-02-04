@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import './Loading.css';
+import '@/styles/Loading.css';
 
 interface LoadingProps {
     text?: string;

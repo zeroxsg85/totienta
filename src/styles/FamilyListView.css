@@ -158,3 +158,50 @@
     border-color: #af8600;
     color: white;
 }
+
+@media (max-width: 768px) {
+    .family-list-view {
+        padding: 0;
+    }
+
+    .list-breadcrumb {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin: 0 0 8px 0;
+        background: #e8f4ff;
+        border-radius: 8px;
+    }
+
+    .list-members {
+        gap: 8px;
+    }
+
+    .member-card-list {
+        border-radius: 8px;
+    }
+
+    .member-card-list .card-body {
+        padding: 10px 12px;
+    }
+
+    .member-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        margin-right: 10px;
+    }
+
+    .member-name-list {
+        font-size: 14px;
+    }
+
+    .member-meta {
+        font-size: 11px;
+    }
+
+    .member-children-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 5px;
+    }
+}
