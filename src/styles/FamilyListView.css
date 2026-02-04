@@ -88,7 +88,7 @@
 
 .member-name-list {
     font-weight: 600;
-    font-size: 15px;
+    font-size: 18px;
     color: #333;
 }
 
@@ -100,7 +100,7 @@
 
 .member-add-btn {
     padding: 8px 12px;
-    color: #28a745;
+    color: #777a78;
     cursor: pointer;
     font-size: 18px;
     transition: color 0.2s;
@@ -119,7 +119,7 @@
     border-radius: 20px;
     color: #1976d2;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
     transition: all 0.2s;
 }
 
@@ -138,7 +138,7 @@
     background: #fff3cd;
     border-radius: 8px;
     margin-bottom: 10px;
-    font-size: 13px;
+    font-size: 14px;
     color: #856404;
 }
 
@@ -150,7 +150,7 @@
 
 .view-toggle .btn {
     padding: 5px 12px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .view-toggle .btn.active {
@@ -166,7 +166,7 @@
 
     .list-breadcrumb {
         padding: 10px 12px;
-        font-size: 13px;
+        font-size: 14px;
         margin: 0 0 8px 0;
         background: #e8f4ff;
         border-radius: 8px;
@@ -196,12 +196,12 @@
     }
 
     .member-meta {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .member-children-btn {
         padding: 6px 10px;
-        font-size: 12px;
+        font-size: 14px;
         gap: 5px;
     }
 }

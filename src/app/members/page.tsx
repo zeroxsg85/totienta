@@ -37,13 +37,7 @@ export default function MembersPage(): JSX.Element | null {
   const [treeKey, setTreeKey] = useState<number>(0);
   const [exporting, setExporting] = useState<boolean>(false);
   const [hideFemale, setHideFemale] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
   const { isMobile } = useDeviceType();
-
-  // Auto switch view theo device
-  useEffect(() => {
-    setViewMode(isMobile ? 'list' : 'tree');
-  }, [isMobile]);
 
   const [showMemberCard, setShowMemberCard] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -355,6 +349,23 @@ export default function MembersPage(): JSX.Element | null {
       {/* ===== MOBILE LAYOUT ===== */}
       {isMobile && (
         <>
+          {/* Hidden FamilyTree for export */}
+          {familyTree && familyTree.length > 0 && (
+            <div
+              className="list-tree"
+              style={{ position: 'absolute', left: '-9999px', top: 0 }}
+            >
+              <FamilyTree
+                ref={treeRef}
+                familyTree={familyTree}
+                onMemberClick={() => { }}
+                isEditable={false}
+                searchTerm={searchTerm}
+                hideFemale={hideFemale}
+              />
+            </div>
+          )}
+
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
             <Button
@@ -426,40 +437,18 @@ export default function MembersPage(): JSX.Element | null {
               )}
             </InputGroup>
           </div>
-          {/* Mobile Content */}
+
+          {/* Mobile Content - ListView only */}
           <div className="mobile-content-area">
-            {/* Hidden FamilyTree for export - luôn render nhưng ẩn */}
-            <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-              <FamilyTree
-                ref={treeRef}
+            {familyTree && familyTree.length > 0 ? (
+              <FamilyListView
                 familyTree={familyTree}
-                onMemberClick={() => { }}
-                isEditable={false}
+                onMemberClick={handleMemberClick}
+                onAddMember={handleAddClick}
+                isEditable={true}
                 searchTerm={searchTerm}
                 hideFemale={hideFemale}
               />
-            </div>
-            {familyTree && familyTree.length > 0 ? (
-              viewMode === 'tree' ? (
-                <FamilyTree
-                  key={treeKey}
-                  ref={treeRef}
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  isEditable={false}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              ) : (
-                <FamilyListView
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  onAddMember={handleAddClick}
-                  isEditable={true}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              )
             ) : (
               <div className="text-center mt-3">
                 <p className="text-muted">Chưa có thành viên nào.</p>
@@ -468,7 +457,6 @@ export default function MembersPage(): JSX.Element | null {
           </div>
         </>
       )}
-
       {/* ===== DESKTOP LAYOUT ===== */}
       {!isMobile && (
         <>
@@ -533,28 +521,20 @@ export default function MembersPage(): JSX.Element | null {
               <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
             </div>
           )}
-          {/* Desktop Content */}
+
+          {/* Desktop Content - TreeView only */}
           <section className="list-tree">
             {familyTree && familyTree.length > 0 ? (
-              viewMode === 'tree' ? (
-                <FamilyTree
-                  key={treeKey}
-                  ref={treeRef}
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  onAddMember={handleAddClick}
-                  isEditable={true}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              ) : (
-                <FamilyListView
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              )
+              <FamilyTree
+                key={treeKey}
+                ref={treeRef}
+                familyTree={familyTree}
+                onMemberClick={handleMemberClick}
+                onAddMember={handleAddClick}
+                isEditable={true}
+                searchTerm={searchTerm}
+                hideFemale={hideFemale}
+              />
             ) : (
               <div className="text-center mt-5 pt-4">
                 <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>

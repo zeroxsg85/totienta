@@ -36,18 +36,12 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
   const [treeKey, setTreeKey] = useState<number>(0);
   const [exporting, setExporting] = useState<boolean>(false);
   const [showSuggestionModal, setShowSuggestionModal] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
   const [hideFemale, setHideFemale] = useState<boolean>(false);
 
   const baseUrl =
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
       ? 'http://localhost:4867'
       : 'https://totienta.com';
-
-  // Auto switch view theo device
-  useEffect(() => {
-    setViewMode(isMobile ? 'list' : 'tree');
-  }, [isMobile]);
 
   // Tính toán thống kê
   const stats = useMemo(() => {
@@ -307,6 +301,23 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
       {/* ===== MOBILE LAYOUT ===== */}
       {isMobile && (
         <>
+          {/* Hidden FamilyTree for export */}
+          {familyTree && familyTree.length > 0 && (
+            <div
+              className="list-tree"
+              style={{ position: 'absolute', left: '-9999px', top: 0 }}
+            >
+              <FamilyTree
+                ref={treeRef}
+                familyTree={familyTree}
+                onMemberClick={() => { }}
+                isEditable={false}
+                searchTerm={searchTerm}
+                hideFemale={hideFemale}
+              />
+            </div>
+          )}
+
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
             <Button
@@ -314,6 +325,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
               size="sm"
               onClick={handleExportImage}
               disabled={exporting}
+              title="Xuất ảnh"
             >
               <FontAwesomeIcon icon={faCamera} />
             </Button>
@@ -322,6 +334,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
               variant={hideFemale ? 'warning' : 'outline-warning'}
               size="sm"
               onClick={() => setHideFemale(!hideFemale)}
+              title={hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
             >
               👩
             </Button>
@@ -386,27 +399,15 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
             </InputGroup>
           </div>
 
-          {/* Mobile Content */}
+          {/* Mobile Content - ListView only */}
           <div className="mobile-content-area">
             {familyTree && familyTree.length > 0 ? (
-              viewMode === 'tree' ? (
-                <FamilyTree
-                  key={treeKey}
-                  ref={treeRef}
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  isEditable={false}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              ) : (
-                <FamilyListView
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              )
+              <FamilyListView
+                familyTree={familyTree}
+                onMemberClick={handleMemberClick}
+                searchTerm={searchTerm}
+                hideFemale={hideFemale}
+              />
             ) : (
               <div className="text-center mt-3">
                 <p className="text-muted">Chưa có thành viên nào.</p>
@@ -475,6 +476,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
               </Button>
             </div>
           </div>
+
           {/* Desktop Stats */}
           {allMembers.length > 0 && (
             <div className="tree-stats">
@@ -487,27 +489,18 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
             </div>
           )}
 
-          {/* Desktop Content */}
+          {/* Desktop Content - TreeView only */}
           <section className="list-tree">
             {familyTree && familyTree.length > 0 ? (
-              viewMode === 'tree' ? (
-                <FamilyTree
-                  key={treeKey}
-                  ref={treeRef}
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  isEditable={false}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              ) : (
-                <FamilyListView
-                  familyTree={familyTree}
-                  onMemberClick={handleMemberClick}
-                  searchTerm={searchTerm}
-                  hideFemale={hideFemale}
-                />
-              )
+              <FamilyTree
+                key={treeKey}
+                ref={treeRef}
+                familyTree={familyTree}
+                onMemberClick={handleMemberClick}
+                isEditable={false}
+                searchTerm={searchTerm}
+                hideFemale={hideFemale}
+              />
             ) : (
               <div className="text-center mt-5 pt-4">
                 <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>
