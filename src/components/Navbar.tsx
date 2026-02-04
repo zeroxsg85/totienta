@@ -78,11 +78,6 @@ export default function Navbar(): JSX.Element {
         {/* Menu */}
         <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
           <ul className="navbar-nav">
-            <li className={`nav-item ${pathname === '/' ? 'active' : ''}`}>
-              <Link className="nav-link" href="/" onClick={closeMenu}>
-                Trang Chủ
-              </Link>
-            </li>
             {isAuthenticated && (
               <>
                 <li className={`nav-item ${pathname === '/members' ? 'active' : ''}`}>
