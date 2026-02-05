@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Form, Button, Card, Row, Col, Badge } from 'react-bootstrap';
+import { Form, Button, Card, Row, Col, Badge, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faUser,
@@ -14,6 +14,9 @@ import {
     faKey,
     faSave,
     faTree,
+    faShieldAlt,
+    faChartBar,
+    faCalendarAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,14 +40,12 @@ export default function ProfilePage(): JSX.Element | null {
         treeName: '',
     });
 
-    // Redirect if not authenticated
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             router.push('/login');
         }
     }, [isAuthenticated, isLoading, router]);
 
-    // Fetch profile
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -115,101 +116,100 @@ export default function ProfilePage(): JSX.Element | null {
     return (
         <div className="container mt-5 pt-4">
             <h2 className="mb-4">
-                <FontAwesomeIcon icon={faUser} /> Thông tin tài khoản
+                <FontAwesomeIcon icon={faUser} className="me-2" />
+                Thông tin tài khoản
             </h2>
 
             <Row>
-                {/* Thông tin cơ bản */}
-                <Col md={8}>
-                    <Card className="mb-4">
-                        <Card.Header>
+                {/* Cột trái - Form thông tin */}
+                <Col lg={8}>
+                    <Card className="mb-4 shadow-sm">
+                        <Card.Header className="bg-white">
                             <strong>Thông tin cá nhân</strong>
                         </Card.Header>
                         <Card.Body>
                             <Form onSubmit={handleSubmit}>
+                                {/* Email */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>
-                                        <FontAwesomeIcon icon={faEnvelope} className="me-2" />
-                                        Email
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="email"
-                                        value={profile.email}
-                                        disabled
-                                        className="bg-light"
-                                    />
-                                    <Form.Text className="text-muted">
-                                        Email không thể thay đổi
-                                    </Form.Text>
+                                    <InputGroup>
+                                        <InputGroup.Text><FontAwesomeIcon icon={faEnvelope} /></InputGroup.Text>
+                                        <Form.Control
+                                            type="email"
+                                            value={profile.email}
+                                            disabled
+                                            className="bg-light"
+                                        />
+                                    </InputGroup>
+                                    <Form.Text className="text-muted">Email không thể thay đổi</Form.Text>
                                 </Form.Group>
 
+                                {/* Họ tên */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>
-                                        <FontAwesomeIcon icon={faUser} className="me-2" />
-                                        Họ tên
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="name"
-                                        value={form.name}
-                                        onChange={handleChange}
-                                        placeholder="Nhập họ tên"
-                                    />
+                                    <InputGroup>
+                                        <InputGroup.Text><FontAwesomeIcon icon={faUser} /></InputGroup.Text>
+                                        <Form.Control
+                                            type="text"
+                                            name="name"
+                                            value={form.name}
+                                            onChange={handleChange}
+                                            placeholder="Họ và tên"
+                                        />
+                                    </InputGroup>
                                 </Form.Group>
 
+                                {/* SĐT */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>
-                                        <FontAwesomeIcon icon={faPhone} className="me-2" />
-                                        Số điện thoại
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="tel"
-                                        name="phone"
-                                        value={form.phone}
-                                        onChange={handleChange}
-                                        placeholder="Nhập số điện thoại"
-                                    />
+                                    <InputGroup>
+                                        <InputGroup.Text><FontAwesomeIcon icon={faPhone} /></InputGroup.Text>
+                                        <Form.Control
+                                            type="tel"
+                                            name="phone"
+                                            value={form.phone}
+                                            onChange={handleChange}
+                                            placeholder="Số điện thoại"
+                                        />
+                                    </InputGroup>
                                 </Form.Group>
 
+                                {/* Địa chỉ */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>
-                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />
-                                        Địa chỉ
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="address"
-                                        value={form.address}
-                                        onChange={handleChange}
-                                        placeholder="Nhập địa chỉ"
-                                    />
+                                    <InputGroup>
+                                        <InputGroup.Text><FontAwesomeIcon icon={faMapMarkerAlt} /></InputGroup.Text>
+                                        <Form.Control
+                                            type="text"
+                                            name="address"
+                                            value={form.address}
+                                            onChange={handleChange}
+                                            placeholder="Địa chỉ"
+                                        />
+                                    </InputGroup>
                                 </Form.Group>
 
+                                {/* Ngày sinh */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>
-                                        <FontAwesomeIcon icon={faBirthdayCake} className="me-2" />
-                                        Ngày sinh
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="date"
-                                        name="birthday"
-                                        value={form.birthday}
-                                        onChange={handleChange}
-                                    />
+                                    <InputGroup>
+                                        <InputGroup.Text><FontAwesomeIcon icon={faBirthdayCake} /></InputGroup.Text>
+                                        <Form.Control
+                                            type="date"
+                                            name="birthday"
+                                            value={form.birthday}
+                                            onChange={handleChange}
+                                        />
+                                    </InputGroup>
                                 </Form.Group>
 
+                                {/* Tên cây gia phả */}
                                 <Form.Group className="mb-3">
-                                    <Form.Label>
-                                        <FontAwesomeIcon icon={faTree} className="me-2" />
-                                        Tên cây gia phả
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="treeName"
-                                        value={form.treeName}
-                                        onChange={handleChange}
-                                        placeholder="VD: Họ Hoàng Lạng Sơn"
-                                    />
+                                    <InputGroup>
+                                        <InputGroup.Text><FontAwesomeIcon icon={faTree} /></InputGroup.Text>
+                                        <Form.Control
+                                            type="text"
+                                            name="treeName"
+                                            value={form.treeName}
+                                            onChange={handleChange}
+                                            placeholder="Tên cây gia phả (VD: Họ Hoàng Lạng Sơn)"
+                                        />
+                                    </InputGroup>
                                     <Form.Text className="text-muted">
                                         Tên này sẽ hiển thị khi chia sẻ cây gia phả
                                     </Form.Text>
@@ -223,10 +223,10 @@ export default function ProfilePage(): JSX.Element | null {
                         </Card.Body>
                     </Card>
 
-                    {/* Đổi mật khẩu */}
-                    <Card className="mb-4">
-                        <Card.Header>
-                            <strong>Bảo mật</strong>
+                    {/* Bảo mật */}
+                    <Card className="mb-4 shadow-sm">
+                        <Card.Header className="bg-white">
+                            <strong><FontAwesomeIcon icon={faShieldAlt} className="me-2" />Bảo mật</strong>
                         </Card.Header>
                         <Card.Body>
                             <Button
@@ -240,10 +240,11 @@ export default function ProfilePage(): JSX.Element | null {
                     </Card>
                 </Col>
 
-                {/* Sidebar - Gói dịch vụ */}
-                <Col md={4}>
-                    <Card className="mb-4">
-                        <Card.Header>
+                {/* Cột phải - Sidebar */}
+                <Col lg={4}>
+                    {/* Gói dịch vụ */}
+                    <Card className="mb-4 shadow-sm">
+                        <Card.Header className="bg-white">
                             <strong>Gói dịch vụ</strong>
                         </Card.Header>
                         <Card.Body>
@@ -251,11 +252,10 @@ export default function ProfilePage(): JSX.Element | null {
                                 Gói hiện tại: {getPlanBadge(profile.plan)}
                             </p>
                             {profile.planExpiry && (
-                                <p className="text-muted small">
+                                <p className="text-muted small mb-3">
                                     Hết hạn: {formatDate(profile.planExpiry)}
                                 </p>
                             )}
-                            <hr />
                             <Button variant="outline-warning" size="sm" disabled>
                                 <FontAwesomeIcon icon={faCrown} className="me-2" />
                                 Nâng cấp (Sắp ra mắt)
@@ -263,15 +263,17 @@ export default function ProfilePage(): JSX.Element | null {
                         </Card.Body>
                     </Card>
 
-                    <Card>
-                        <Card.Header>
-                            <strong>Thống kê</strong>
+                    {/* Thống kê */}
+                    <Card className="shadow-sm">
+                        <Card.Header className="bg-white">
+                            <strong><FontAwesomeIcon icon={faChartBar} className="me-2" />Thống kê</strong>
                         </Card.Header>
                         <Card.Body>
-                            <p className="mb-1">
+                            <p className="mb-0">
+                                <FontAwesomeIcon icon={faCalendarAlt} className="me-2 text-muted" />
                                 <small className="text-muted">Ngày tham gia:</small>
                                 <br />
-                                {formatDate(profile.createdAt)}
+                                <strong>{formatDate(profile.createdAt)}</strong>
                             </p>
                         </Card.Body>
                     </Card>
