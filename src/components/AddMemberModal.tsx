@@ -15,6 +15,7 @@ interface AddMemberModalProps {
   onSubmit: (data: MemberFormData) => Promise<void>;
   allMembers: Member[];
   parentId?: string | null;
+  defaultChildId?: string | null;
 }
 
 const initialMemberState: MemberFormData & { spouseIndex?: number } = {
@@ -38,19 +39,33 @@ export default function AddMemberModal({
   onSubmit,
   allMembers = [],
   parentId = null,
+  defaultChildId = null,
 }: AddMemberModalProps): JSX.Element {
   const [newMember, setNewMember] = useState<MemberFormData & { spouseIndex?: number }>(initialMemberState);
   const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [showChildrenModal, setShowChildrenModal] = useState<boolean>(false);
+  const isAddParentMode = !!defaultChildId;
 
   // Reset form khi mở modal
   useEffect(() => {
-    if (show) {
-      setNewMember({ ...initialMemberState, parent: parentId });
+    if (!show) return;
+
+    const isAddParentMode = !!defaultChildId;
+
+    setNewMember({
+      ...initialMemberState,
+      parent: parentId,
+      maritalStatus: isAddParentMode ? 'married' : 'single', // 👈 CHỐT
+    });
+
+    if (isAddParentMode) {
+      setSelectedChildren([defaultChildId]); // 👈 GÁN CON MẶC ĐỊNH
+    } else {
       setSelectedChildren([]);
     }
-  }, [show, parentId]);
+  }, [show, parentId, defaultChildId]);
+
 
   // Lấy thông tin parent đã chọn
   const selectedParent = parentId
@@ -253,7 +268,9 @@ export default function AddMemberModal({
 
             {/* Parent Selection */}
             <InputGroup className="mb-3">
-              <InputGroup.Text>Con của</InputGroup.Text>
+              <InputGroup.Text>
+                {isAddParentMode ? 'Cha/mẹ của' : 'Con của'}
+              </InputGroup.Text>
               {parentId ? (
                 // Đã chọn parent từ trước - hiển thị readonly
                 <Form.Control
@@ -353,8 +370,15 @@ export default function AddMemberModal({
         onHide={() => setShowChildrenModal(false)}
         allMembers={allMembers}
         selectedIds={selectedChildren}
-        onConfirm={setSelectedChildren}
+        onConfirm={(ids) => {
+          if (defaultChildId && !ids.includes(defaultChildId)) {
+            setSelectedChildren([defaultChildId, ...ids]);
+          } else {
+            setSelectedChildren(ids);
+          }
+        }}
       />
+
     </>
   );
 }

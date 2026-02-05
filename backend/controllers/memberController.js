@@ -188,7 +188,7 @@ const getAllMembers = async (req, res) => {
 };
 
 
-//Thêm thành viên mới
+// Thêm thành viên mới (hỗ trợ thêm CHA/MẸ cho root)
 const createMember = async (req, res) => {
     try {
         const {
@@ -201,12 +201,12 @@ const createMember = async (req, res) => {
             address,
             spouse,
             deathDate,
-            parent,
-            children = [],
+            parent,      // dùng khi thêm CON
+            children = [], // dùng khi thêm CHA/MẸ
             customFields = []
         } = req.body;
 
-        // Tạo thành viên mới
+        // Tạo member mới
         const newMember = new Member({
             name,
             gender,
@@ -218,22 +218,22 @@ const createMember = async (req, res) => {
             spouse: maritalStatus === 'married' ? spouse : [],
             deathDate: isAlive ? null : deathDate,
             parent: parent || null,
-            children,
+            children: children || [],
             customFields,
             createdBy: req.user._id,
         });
 
         const savedMember = await newMember.save();
 
-        // Nếu có cha/mẹ, cập nhật danh sách con
+        // ===== THÊM CON (logic cũ, giữ nguyên) =====
         if (parent) {
             await Member.findByIdAndUpdate(parent, {
                 $push: { children: savedMember._id },
             });
         }
 
-        // Nếu có con, cập nhật cha/mẹ của các con
-        if (children.length > 0) {
+        // ===== THÊM CHA/MẸ (logic mới, QUAN TRỌNG) =====
+        if (!parent && children.length > 0) {
             await Member.updateMany(
                 { _id: { $in: children } },
                 { parent: savedMember._id }
@@ -245,6 +245,7 @@ const createMember = async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi thêm thành viên', error });
     }
 };
+
 
 // Cập nhật thông tin thành viên
 const updateMember = async (req, res) => {

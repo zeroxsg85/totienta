@@ -2,7 +2,7 @@
 
 import { useState, forwardRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faChevronDown, faChevronRight, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { Member } from '@/types';
 import '@/styles/FamilyTree.css';
 
@@ -11,7 +11,8 @@ const levelColors: string[] = ['blue', 'red', 'green', 'navy', 'darkred'];
 interface FamilyTreeProps {
   familyTree: Member[];
   onMemberClick?: (member: Member) => void;
-  onAddMember?: (parentId: string) => void;
+  onAddChild?: (parentId: string) => void;
+  onAddParent?: (childId: string) => void;
   isEditable?: boolean;
   searchTerm?: string;
   hideFemale?: boolean;
@@ -20,7 +21,8 @@ interface FamilyTreeProps {
 const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
   familyTree,
   onMemberClick,
-  onAddMember,
+  onAddChild,
+  onAddParent,
   isEditable = false,
   searchTerm = '',
   hideFemale = false,
@@ -153,19 +155,30 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
 
         {showAddButton && (
           <>
-            {(node.maritalStatus === 'single' && !node.isAlive) || childCount === 0
-              ? ''
-              : ` (${childCount})`}
+            {/* Thêm con */}
             <FontAwesomeIcon
               icon={faPlusCircle}
               className="add-member-icon text-secondary mb-1 ms-2"
+              title="Thêm con"
               onClick={(e) => {
                 e.stopPropagation();
-                onAddMember?.(node._id);
+                onAddChild?.(node._id);
+              }}
+            />
+
+            {/* Thêm cha/mẹ */}
+            <FontAwesomeIcon
+              icon={faChevronUp}
+              className="add-parent-icon text-secondary mb-1 ms-1"
+              title="Thêm cha/mẹ"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddParent?.(node._id);
               }}
             />
           </>
         )}
+
 
         {!isEditable && parentGender !== 'female' && (
           <>

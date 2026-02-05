@@ -46,6 +46,10 @@ export default function MembersPage(): JSX.Element | null {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editMember, setEditMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
+  const [defaultChildId, setDefaultChildId] = useState<string | null>(null);
+
+
 
   const baseUrl =
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -327,6 +331,21 @@ export default function MembersPage(): JSX.Element | null {
     setShowAddModal(true);
   };
 
+  const handleAddParent = (childId: string): void => {
+    setSelectedParentId(null);      // 👈 người mới là root tạm
+    setDefaultChildId(childId);     // 👈 CON MẶC ĐỊNH
+    setShowAddModal(true);
+  };
+
+
+  const handleAddChild = (parentId: string): void => {
+    setSelectedParentId(parentId);
+    setDefaultChildId(null); // 👈 KHÔNG phải thêm cha/mẹ
+    setShowAddModal(true);
+  };
+
+  const isEmptyTree = allMembers.length === 0;
+
   const handleEditClick = (member: Member): void => {
     setShowMemberCard(false);
     setEditMember(member);
@@ -452,6 +471,18 @@ export default function MembersPage(): JSX.Element | null {
             ) : (
               <div className="text-center mt-3">
                 <p className="text-muted">Chưa có thành viên nào.</p>
+                <Button
+                  onClick={() => {
+                    if (isEmptyTree) {
+                      setSelectedParentId(null);
+                      setSelectedChildren([]);
+                      setShowAddModal(true);
+                    }
+                  }}
+                >
+                  Thêm thành viên
+                </Button>
+
               </div>
             )}
           </div>
@@ -530,7 +561,8 @@ export default function MembersPage(): JSX.Element | null {
                 ref={treeRef}
                 familyTree={familyTree}
                 onMemberClick={handleMemberClick}
-                onAddMember={handleAddClick}
+                onAddChild={handleAddChild}
+                onAddParent={handleAddParent}
                 isEditable={true}
                 searchTerm={searchTerm}
                 hideFemale={hideFemale}
@@ -538,6 +570,18 @@ export default function MembersPage(): JSX.Element | null {
             ) : (
               <div className="text-center mt-5 pt-4">
                 <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>
+                <Button
+                  onClick={() => {
+                    if (isEmptyTree) {
+                      setSelectedParentId(null);
+                      setSelectedChildren([]);
+                      setShowAddModal(true);
+                    }
+                  }}
+                >
+                  Thêm thành viên
+                </Button>
+
               </div>
             )}
           </section>
@@ -587,11 +631,14 @@ export default function MembersPage(): JSX.Element | null {
         onHide={() => {
           setShowAddModal(false);
           setSelectedParentId(null);
+          setDefaultChildId(null); // 👈 THÊM
         }}
         onSubmit={handleAddMember}
         allMembers={allMembers}
         parentId={selectedParentId}
+        defaultChildId={defaultChildId} // 👈 THÊM
       />
+
 
       <EditMemberModal
         show={showEditModal}
