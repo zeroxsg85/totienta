@@ -39,9 +39,9 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
   const [hideFemale, setHideFemale] = useState<boolean>(false);
 
   const baseUrl =
-    typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      ? 'http://localhost:4867'
-      : 'https://totienta.com';
+    typeof window !== "undefined" && window.location.hostname === "localhost"
+      ? "http://localhost:4867"
+      : "https://app.totienta.com";
 
   // Tính toán thống kê
   const stats = useMemo(() => {
