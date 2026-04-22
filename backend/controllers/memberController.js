@@ -438,6 +438,54 @@ const getTreeInfo = async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi lấy thông tin', error });
     }
 };
+/**
+ * B7: Tìm mình trong toàn bộ app (search global, không phải chỉ cây của mình)
+ * Trả về member + viewCode + tên cây để user biết mình đã được thêm vào đâu
+ */
+const searchGlobal = async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || q.trim().length < 2) {
+            return res.json({ results: [] });
+        }
+
+        const User = require('../models/User');
+        const myId = req.user._id.toString();
+
+        // Tìm member ở TẤT CẢ các cây (kể cả cây của mình)
+        const members = await Member.find({
+            name: { $regex: q.trim(), $options: 'i' },
+        })
+            .select('name gender birthday viewCode createdBy')
+            .limit(30)
+            .lean();
+
+        if (!members.length) return res.json({ results: [] });
+
+        // Lấy thông tin chủ cây (treeName, name) theo batch
+        const ownerIds = [...new Set(members.map((m) => m.createdBy?.toString()))];
+        const owners = await User.find({ _id: { $in: ownerIds } }).select('_id name treeName').lean();
+        const ownerMap = Object.fromEntries(owners.map((o) => [o._id.toString(), o]));
+
+        const results = members.map((m) => {
+            const owner = ownerMap[m.createdBy?.toString()] || {};
+            return {
+                _id: m._id,
+                name: m.name,
+                gender: m.gender,
+                birthday: m.birthday,
+                viewCode: m.viewCode,
+                treeName: owner.treeName || owner.name || 'Không tên',
+                isMyTree: m.createdBy?.toString() === myId,
+            };
+        });
+
+        res.json({ results });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi tìm kiếm', error });
+    }
+};
+
 module.exports = {
     getFamilyTree,
     getAllMembers,
@@ -451,4 +499,5 @@ module.exports = {
     updateViewCode,
     uploadMemberAvatar,
     getTreeInfo,
+    searchGlobal,
 };

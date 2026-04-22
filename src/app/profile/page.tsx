@@ -21,7 +21,17 @@ import {
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
 import API from '@/lib/api';
-import { UserProfile, Member } from '@/types';
+import { UserProfile } from '@/types';
+
+interface GlobalSearchResult {
+    _id: string;
+    name: string;
+    gender: 'male' | 'female';
+    birthday?: { solar?: string };
+    viewCode?: string;
+    treeName: string;
+    isMyTree: boolean;
+}
 import Loading from '@/components/Loading';
 import TwoFactorSetup from '@/components/TwoFactorSetup';
 
@@ -35,7 +45,7 @@ export default function ProfilePage(): JSX.Element | null {
 
     // B7: Tìm tôi trong gia phả
     const [findQuery, setFindQuery] = useState('');
-    const [findResults, setFindResults] = useState<Member[]>([]);
+    const [findResults, setFindResults] = useState<GlobalSearchResult[]>([]);
     const [findLoading, setFindLoading] = useState(false);
     const findTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -96,7 +106,7 @@ export default function ProfilePage(): JSX.Element | null {
         }
     };
 
-    // B7: Tìm member theo tên (debounce 400ms)
+    // B7: Tìm mình trong TOÀN BỘ app (debounce 400ms)
     const handleFindQuery = (q: string) => {
         setFindQuery(q);
         if (findTimer.current) clearTimeout(findTimer.current);
@@ -104,8 +114,10 @@ export default function ProfilePage(): JSX.Element | null {
         findTimer.current = setTimeout(async () => {
             setFindLoading(true);
             try {
-                const { data } = await API.get<Member[]>('/members', { params: { search: q.trim() } });
-                setFindResults(data);
+                const { data } = await API.get<{ results: GlobalSearchResult[] }>(
+                    '/members/search-global', { params: { q: q.trim() } }
+                );
+                setFindResults(data.results);
             } catch {
                 setFindResults([]);
             } finally {
@@ -314,20 +326,20 @@ export default function ProfilePage(): JSX.Element | null {
                 </Col>
             </Row>
 
-            {/* B7: Tìm tôi trong gia phả */}
+            {/* B7: Tìm tôi trong gia phả (search toàn bộ app) */}
             <Card className="mb-4 shadow-sm">
                 <Card.Header className="bg-white">
                     <strong>🔍 Tìm tôi trong gia phả</strong>
                 </Card.Header>
                 <Card.Body>
                     <p className="text-muted small mb-3">
-                        Nhập tên của bạn để tìm xem bạn đã được thêm vào cây gia phả chưa.
+                        Nhập tên của bạn để xem bạn đã được thêm vào cây gia phả nào trong toàn bộ hệ thống.
                     </p>
                     <InputGroup className="mb-3">
                         <InputGroup.Text>🔍</InputGroup.Text>
                         <Form.Control
                             type="text"
-                            placeholder="Nhập họ tên..."
+                            placeholder="Nhập họ tên của bạn..."
                             value={findQuery}
                             onChange={(e) => handleFindQuery(e.target.value)}
                         />
@@ -336,7 +348,7 @@ export default function ProfilePage(): JSX.Element | null {
                     {findLoading && <p className="text-muted small">Đang tìm...</p>}
 
                     {!findLoading && findQuery.length >= 2 && findResults.length === 0 && (
-                        <p className="text-muted small">Không tìm thấy thành viên nào phù hợp.</p>
+                        <p className="text-muted small">Không tìm thấy ai tên này trong hệ thống.</p>
                     )}
 
                     {findResults.length > 0 && (
@@ -347,21 +359,27 @@ export default function ProfilePage(): JSX.Element | null {
                                         <strong>{m.name}</strong>
                                         {m.birthday?.solar && (
                                             <span className="text-muted ms-2 small">
-                                                {new Date(m.birthday.solar).getFullYear()}
+                                                ({new Date(m.birthday.solar).getFullYear()})
                                             </span>
                                         )}
                                         <span className="ms-2 badge bg-light text-dark border">
                                             {m.gender === 'male' ? 'Nam' : 'Nữ'}
                                         </span>
+                                        <div className="text-muted small mt-1">
+                                            🌳 Cây: <strong>{m.treeName}</strong>
+                                            {m.isMyTree && (
+                                                <Badge bg="success" className="ms-2">Cây của bạn</Badge>
+                                            )}
+                                        </div>
                                     </div>
-                                    {profile.viewCode && (
+                                    {m.viewCode && (
                                         <a
-                                            href={`/${profile.viewCode}?highlight=${m._id}`}
+                                            href={`/${m.viewCode}`}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="btn btn-sm btn-outline-primary"
                                         >
-                                            Xem trong cây ↗
+                                            Xem cây ↗
                                         </a>
                                     )}
                                 </div>
