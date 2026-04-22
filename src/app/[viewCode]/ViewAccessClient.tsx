@@ -570,7 +570,6 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
           setShowSuggestionPrompt(false);
         }}
         centered
-        size="xl"
       >
         <Modal.Header closeButton>
           <Modal.Title style={{ fontSize: "1rem" }}>👨‍👩‍👧‍👦 Bạn có trong gia phả này?</Modal.Title>
