@@ -198,7 +198,7 @@ export default function ClanPage(): JSX.Element | null {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="container py-4">
+    <div className="container mt-5 pt-4">
       <h2 className="mb-4">
         <FontAwesomeIcon icon={faPeopleGroup} className="me-2" />
         Quản Lý Dòng Họ
@@ -206,52 +206,65 @@ export default function ClanPage(): JSX.Element | null {
 
       {/* ══════════════ THÔNG TIN DÒNG HỌ ══════════════ */}
       <Card className="mb-4">
-        <Card.Header><strong>🏰 Thông tin dòng họ</strong></Card.Header>
+        <Card.Header>
+          <strong>🏰 Thông tin dòng họ</strong>
+        </Card.Header>
         <Card.Body>
           <Row className="g-3">
             <Col xs={12} md={6}>
               <InputGroup>
                 <InputGroup.Text>Gốc tích</InputGroup.Text>
-                <Form.Control type="text" placeholder="Nguồn gốc dòng họ..."
-                  value={clanInfo.origin || ''}
-                  onChange={(e) => setClanInfo({ ...clanInfo, origin: e.target.value })} />
+                <Form.Control
+                  type="text"
+                  placeholder="Nguồn gốc dòng họ..."
+                  value={clanInfo.origin || ""}
+                  onChange={(e) => setClanInfo({ ...clanInfo, origin: e.target.value })}
+                />
               </InputGroup>
             </Col>
             <Col xs={12} md={6}>
               <InputGroup>
                 <InputGroup.Text>Quê gốc</InputGroup.Text>
-                <Form.Control type="text" placeholder="Quê hương tổ tiên..."
-                  value={clanInfo.ancestralHome || ''}
-                  onChange={(e) => setClanInfo({ ...clanInfo, ancestralHome: e.target.value })} />
+                <Form.Control
+                  type="text"
+                  placeholder="Quê hương tổ tiên..."
+                  value={clanInfo.ancestralHome || ""}
+                  onChange={(e) => setClanInfo({ ...clanInfo, ancestralHome: e.target.value })}
+                />
               </InputGroup>
             </Col>
             <Col xs={12} md={6}>
               <InputGroup>
                 <InputGroup.Text>Gia huấn</InputGroup.Text>
-                <Form.Control type="text" placeholder="Câu châm ngôn / gia huấn..."
-                  value={clanInfo.motto || ''}
-                  onChange={(e) => setClanInfo({ ...clanInfo, motto: e.target.value })} />
+                <Form.Control
+                  type="text"
+                  placeholder="Câu châm ngôn / gia huấn..."
+                  value={clanInfo.motto || ""}
+                  onChange={(e) => setClanInfo({ ...clanInfo, motto: e.target.value })}
+                />
               </InputGroup>
             </Col>
             <Col xs={12} md={6}>
               <InputGroup>
                 <InputGroup.Text>Biểu tượng (URL)</InputGroup.Text>
-                <Form.Control type="url" placeholder="https://..."
-                  value={clanInfo.crest || ''}
-                  onChange={(e) => setClanInfo({ ...clanInfo, crest: e.target.value })} />
+                <Form.Control
+                  type="url"
+                  placeholder="https://..."
+                  value={clanInfo.crest || ""}
+                  onChange={(e) => setClanInfo({ ...clanInfo, crest: e.target.value })}
+                />
               </InputGroup>
             </Col>
           </Row>
           {clanInfo.crest && (
             <div className="mt-3">
-              <img src={clanInfo.crest} alt="Biểu tượng dòng họ"
-                style={{ maxHeight: 80, maxWidth: '100%', objectFit: 'contain' }} />
+              <img src={clanInfo.crest} alt="Biểu tượng dòng họ" style={{ maxHeight: 80, maxWidth: "100%", objectFit: "contain" }} />
             </div>
           )}
           <div className="mt-3">
             <Button variant="primary" onClick={handleSaveClanInfo} disabled={saving}>
               <FontAwesomeIcon icon={faSave} className="me-1" />
-              {saving ? 'Đang lưu...' : 'Lưu thông tin dòng họ'}
+              {saving ? "Đang lưu..." : "Lưu thông tin dòng họ"}
             </Button>
           </div>
         </Card.Body>
@@ -278,9 +291,11 @@ export default function ClanPage(): JSX.Element | null {
                       <Badge bg="secondary" className="me-1">
                         {EVENT_TYPE_LABELS[ev.type as EventType] || ev.type}
                       </Badge>
-                      {ev.date && <span className="me-2">📅 {new Date(ev.date).toLocaleDateString('vi-VN')}</span>}
+                      {ev.date && <span className="me-2">📅 {new Date(ev.date).toLocaleDateString("vi-VN")}</span>}
                       {ev.lunarDate?.day && ev.lunarDate?.month && (
-                        <span className="me-2">🌙 Ngày {ev.lunarDate.day} tháng {ev.lunarDate.month}</span>
+                        <span className="me-2">
+                          🌙 Ngày {ev.lunarDate.day} tháng {ev.lunarDate.month}
+                        </span>
                       )}
                       {ev.location && <span className="me-2">📍 {ev.location}</span>}
                     </div>
@@ -307,30 +322,41 @@ export default function ClanPage(): JSX.Element | null {
 
       {/* ══════════════ QUỸ DÒNG HỌ ══════════════ */}
       <Card className="mb-4">
-        <Card.Header><strong>💰 Quỹ dòng họ</strong></Card.Header>
+        <Card.Header>
+          <strong>💰 Quỹ dòng họ</strong>
+        </Card.Header>
         <Card.Body>
           <Form.Group className="mb-3">
-            <Form.Check type="switch" label="Bật quỹ dòng họ"
+            <Form.Check
+              type="switch"
+              label="Bật quỹ dòng họ"
               checked={fund.isEnabled || false}
-              onChange={(e) => setFund({ ...fund, isEnabled: e.target.checked })} />
+              onChange={(e) => setFund({ ...fund, isEnabled: e.target.checked })}
+            />
           </Form.Group>
           {fund.isEnabled && (
             <Row className="g-3">
               <Col xs={12} md={4}>
                 <InputGroup>
                   <InputGroup.Text>Số dư</InputGroup.Text>
-                  <Form.Control type="number" min={0}
+                  <Form.Control
+                    type="number"
+                    min={0}
                     value={fund.balance || 0}
-                    onChange={(e) => setFund({ ...fund, balance: Number(e.target.value) })} />
-                  <InputGroup.Text>{fund.currency || 'VND'}</InputGroup.Text>
+                    onChange={(e) => setFund({ ...fund, balance: Number(e.target.value) })}
+                  />
+                  <InputGroup.Text>{fund.currency || "VND"}</InputGroup.Text>
                 </InputGroup>
               </Col>
               <Col xs={12} md={8}>
                 <InputGroup>
                   <InputGroup.Text>Mục đích</InputGroup.Text>
-                  <Form.Control type="text" placeholder="VD: Học bổng, trùng tu mộ tổ..."
-                    value={fund.purpose || ''}
-                    onChange={(e) => setFund({ ...fund, purpose: e.target.value })} />
+                  <Form.Control
+                    type="text"
+                    placeholder="VD: Học bổng, trùng tu mộ tổ..."
+                    value={fund.purpose || ""}
+                    onChange={(e) => setFund({ ...fund, purpose: e.target.value })}
+                  />
                 </InputGroup>
               </Col>
             </Row>
@@ -338,7 +364,7 @@ export default function ClanPage(): JSX.Element | null {
           <div className="mt-3">
             <Button variant="primary" onClick={handleSaveFund} disabled={saving}>
               <FontAwesomeIcon icon={faSave} className="me-1" />
-              {saving ? 'Đang lưu...' : 'Lưu thông tin quỹ'}
+              {saving ? "Đang lưu..." : "Lưu thông tin quỹ"}
             </Button>
           </div>
         </Card.Body>
@@ -353,79 +379,106 @@ export default function ClanPage(): JSX.Element | null {
       {/* ══════════════ MODAL SỰ KIỆN ══════════════ */}
       <Modal show={showEventModal} onHide={() => setShowEventModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{editingEvent ? 'Chỉnh sửa sự kiện' : 'Thêm sự kiện mới'}</Modal.Title>
+          <Modal.Title>{editingEvent ? "Chỉnh sửa sự kiện" : "Thêm sự kiện mới"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSaveEvent}>
             <InputGroup className="mb-3">
               <InputGroup.Text>Tên</InputGroup.Text>
-              <Form.Control type="text" required placeholder="Tên sự kiện..."
+              <Form.Control
+                type="text"
+                required
+                placeholder="Tên sự kiện..."
                 value={eventForm.title}
-                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} />
+                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+              />
             </InputGroup>
 
             <InputGroup className="mb-3">
               <InputGroup.Text>Loại</InputGroup.Text>
-              <Form.Select value={eventForm.type || 'khác'}
-                onChange={(e) => setEventForm({ ...eventForm, type: e.target.value as EventType })}>
+              <Form.Select
+                value={eventForm.type || "khác"}
+                onChange={(e) => setEventForm({ ...eventForm, type: e.target.value as EventType })}
+              >
                 {EVENT_TYPES.map((t) => (
-                  <option key={t} value={t}>{EVENT_TYPE_LABELS[t]}</option>
+                  <option key={t} value={t}>
+                    {EVENT_TYPE_LABELS[t]}
+                  </option>
                 ))}
               </Form.Select>
             </InputGroup>
 
             <InputGroup className="mb-3">
               <InputGroup.Text>Ngày (dương)</InputGroup.Text>
-              <Form.Control type="date"
-                value={eventForm.date || ''}
-                onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })} />
+              <Form.Control
+                type="date"
+                value={eventForm.date || ""}
+                onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+              />
             </InputGroup>
 
             <Row className="mb-3 g-2">
               <Col xs={4}>
                 <InputGroup>
                   <InputGroup.Text>Ngày ÂL</InputGroup.Text>
-                  <Form.Control type="number" min={1} max={30}
-                    value={eventForm.lunarDate?.day || ''}
-                    onChange={(e) => setLunar({ day: Number(e.target.value) })} />
+                  <Form.Control
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={eventForm.lunarDate?.day || ""}
+                    onChange={(e) => setLunar({ day: Number(e.target.value) })}
+                  />
                 </InputGroup>
               </Col>
               <Col xs={4}>
                 <InputGroup>
                   <InputGroup.Text>Tháng ÂL</InputGroup.Text>
-                  <Form.Control type="number" min={1} max={12}
-                    value={eventForm.lunarDate?.month || ''}
-                    onChange={(e) => setLunar({ month: Number(e.target.value) })} />
+                  <Form.Control
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={eventForm.lunarDate?.month || ""}
+                    onChange={(e) => setLunar({ month: Number(e.target.value) })}
+                  />
                 </InputGroup>
               </Col>
               <Col xs={4}>
                 <InputGroup>
                   <InputGroup.Text>Năm</InputGroup.Text>
-                  <Form.Control type="number"
-                    value={eventForm.lunarDate?.year || ''}
-                    onChange={(e) => setLunar({ year: Number(e.target.value) })} />
+                  <Form.Control
+                    type="number"
+                    value={eventForm.lunarDate?.year || ""}
+                    onChange={(e) => setLunar({ year: Number(e.target.value) })}
+                  />
                 </InputGroup>
               </Col>
             </Row>
 
             <InputGroup className="mb-3">
               <InputGroup.Text>Địa điểm</InputGroup.Text>
-              <Form.Control type="text"
-                value={eventForm.location || ''}
-                onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} />
+              <Form.Control
+                type="text"
+                value={eventForm.location || ""}
+                onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+              />
             </InputGroup>
 
             <InputGroup className="mb-3">
               <InputGroup.Text>URL Livestream</InputGroup.Text>
-              <Form.Control type="url" placeholder="https://..."
-                value={eventForm.livestreamUrl || ''}
-                onChange={(e) => setEventForm({ ...eventForm, livestreamUrl: e.target.value })} />
+              <Form.Control
+                type="url"
+                placeholder="https://..."
+                value={eventForm.livestreamUrl || ""}
+                onChange={(e) => setEventForm({ ...eventForm, livestreamUrl: e.target.value })}
+              />
             </InputGroup>
 
             <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={() => setShowEventModal(false)}>Hủy</Button>
+              <Button variant="secondary" onClick={() => setShowEventModal(false)}>
+                Hủy
+              </Button>
               <Button type="submit" variant="primary" disabled={saving}>
-                {saving ? 'Đang lưu...' : 'Lưu'}
+                {saving ? "Đang lưu..." : "Lưu"}
               </Button>
             </div>
           </Form>
