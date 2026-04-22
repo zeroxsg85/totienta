@@ -100,6 +100,15 @@ export default function AddMemberModal({
   const handleBasicChange = (patch: Partial<BasicMemberData>) =>
     setNewMember((prev) => ({ ...prev, ...patch }));
 
+  // B6: Duplicate detection trong cùng cây
+  const duplicates = newMember.name
+    ? allMembers.filter((m) => {
+        const nameA = newMember.name.toLowerCase().trim();
+        const nameB = m.name.toLowerCase().trim();
+        return nameA.length >= 2 && (nameA === nameB || nameA.includes(nameB) || nameB.includes(nameA));
+      })
+    : [];
+
   const parentOptions = allMembers.map((m) => ({ value: m._id, label: m.name }));
 
   const selectedChildrenNames = selectedChildren
@@ -117,12 +126,20 @@ export default function AddMemberModal({
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            {/* ── Field chung (name, birthday, gender, phone, address, occupation,
-                hometown, religion, idCard, maritalStatus, isAlive, deathDate…) ── */}
+            {/* ── Field chung ── */}
             <MemberBasicFields
               data={newMember as BasicMemberData}
               onChange={handleBasicChange}
             />
+
+            {/* B6: Cảnh báo trùng tên trong cùng cây */}
+            {duplicates.length > 0 && (
+              <div className="alert alert-warning py-2 mb-3">
+                ⚠️ <strong>Có thể trùng:</strong>{' '}
+                {duplicates.map((m) => m.name).join(', ')} đã có trong cây.
+                Kiểm tra lại trước khi thêm.
+              </div>
+            )}
 
             {/* Thông tin vợ/chồng */}
             {newMember.maritalStatus === 'married' && (

@@ -17,6 +17,7 @@ export default function Navbar(): JSX.Element {
   const { isMobile } = useDeviceType();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [pendingCount, setPendingCount] = useState<number>(0);
+  const [matchCount, setMatchCount] = useState<number>(0);
 
   const handleLogout = (): void => {
     logout();
@@ -40,10 +41,22 @@ export default function Navbar(): JSX.Element {
       }
     };
 
+    const fetchMatchCount = async () => {
+      if (!isAuthenticated) return;
+      try {
+        const { data } = await API.get<{ count: number }>('/cross-tree/matches/count');
+        setMatchCount(data.count);
+      } catch { /* bỏ qua */ }
+    };
+
     fetchPendingCount();
+    fetchMatchCount();
 
     // Refresh mỗi 30 giây
-    const interval = setInterval(fetchPendingCount, 30000);
+    const interval = setInterval(() => {
+      fetchPendingCount();
+      fetchMatchCount();
+    }, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
@@ -90,6 +103,16 @@ export default function Navbar(): JSX.Element {
                     Đề xuất
                     {pendingCount > 0 && (
                       <span className="notification-badge">{pendingCount > 9 ? '9+' : pendingCount}</span>
+                    )}
+                  </Link>
+                </li>
+                <li className={`nav-item ${pathname === '/matches' ? 'active' : ''}`}>
+                  <Link className="nav-link position-relative" href="/matches" onClick={closeMenu}>
+                    Kết nối
+                    {matchCount > 0 && (
+                      <span className="notification-badge" style={{ backgroundColor: '#198754' }}>
+                        {matchCount > 9 ? '9+' : matchCount}
+                      </span>
                     )}
                   </Link>
                 </li>

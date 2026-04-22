@@ -3,6 +3,7 @@ const Member = require("../models/Member");
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
+const { detectAndCreateMatches } = require('./crossTreeController');
 
 const uploadMemberAvatar = async (req, res) => {
     let { _id } = req.body;
@@ -218,7 +219,12 @@ const getFamilyTreeByViewCode = async (req, res) => {
 // Lấy danh sách tất cả thành viên của người dùng hiện tại
 const getAllMembers = async (req, res) => {
     try {
-        const members = await Member.find({ createdBy: req.user._id }).populate('parent spouse children');
+        const filter = { createdBy: req.user._id };
+        // B7: Hỗ trợ tìm kiếm theo tên
+        if (req.query.search) {
+            filter.name = { $regex: req.query.search.trim(), $options: 'i' };
+        }
+        const members = await Member.find(filter).populate('parent spouse children');
         res.status(200).json(members);
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách thành viên', error });
@@ -295,6 +301,9 @@ const createMember = async (req, res) => {
         }
 
         res.status(201).json(savedMember);
+
+        // Async: phát hiện trùng với các cây khác (không block response)
+        detectAndCreateMatches(savedMember.toObject(), req.user._id.toString()).catch(() => {});
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi thêm thành viên', error });
     }
@@ -319,6 +328,9 @@ const updateMember = async (req, res) => {
         const updatedMember = await Member.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
         res.status(200).json(updatedMember);
+
+        // Async: re-check trùng sau khi cập nhật
+        detectAndCreateMatches(updatedMember.toObject(), req.user._id.toString()).catch(() => {});
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi cập nhật thành viên', error });
     }

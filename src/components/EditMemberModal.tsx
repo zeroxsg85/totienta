@@ -189,9 +189,23 @@ export default function EditMemberModal({
               <Tab.Content>
                 {/* ══════════════════════ TAB CƠ BẢN ══════════════════════ */}
                 <Tab.Pane eventKey="basic">
-                  {/* ── Các trường cơ bản dùng chung (tên, ngày sinh, giới tính, hôn nhân,
-                       điện thoại, địa chỉ, nghề nghiệp, quê quán, tín ngưỡng, CCCD,
-                       còn sống, ngày mất, ngày giỗ) ── */}
+                  {/* B6: Cảnh báo trùng tên trong cùng cây (trừ chính member đang sửa) */}
+                  {editMember.name && (() => {
+                    const nameA = editMember.name.toLowerCase().trim();
+                    const dups = allMembers.filter((m) => {
+                      if (m._id === editMember._id) return false;
+                      const nameB = m.name.toLowerCase().trim();
+                      return nameA.length >= 2 && (nameA === nameB || nameA.includes(nameB) || nameB.includes(nameA));
+                    });
+                    return dups.length > 0 ? (
+                      <div className="alert alert-warning py-2 mb-3">
+                        ⚠️ <strong>Tên tương tự:</strong>{' '}
+                        {dups.map((m) => m.name).join(', ')} đã có trong cây.
+                      </div>
+                    ) : null;
+                  })()}
+
+                  {/* ── Các trường cơ bản dùng chung ── */}
                   <MemberBasicFields
                     data={editMember as BasicMemberData}
                     onChange={(patch) => {

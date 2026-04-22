@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Form, Button, Card, Row, Col, Badge, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,7 +21,7 @@ import {
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
 import API from '@/lib/api';
-import { UserProfile } from '@/types';
+import { UserProfile, Member } from '@/types';
 import Loading from '@/components/Loading';
 
 export default function ProfilePage(): JSX.Element | null {
@@ -31,6 +31,12 @@ export default function ProfilePage(): JSX.Element | null {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [saving, setSaving] = useState<boolean>(false);
+
+    // B7: Tìm tôi trong gia phả
+    const [findQuery, setFindQuery] = useState('');
+    const [findResults, setFindResults] = useState<Member[]>([]);
+    const [findLoading, setFindLoading] = useState(false);
+    const findTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [form, setForm] = useState({
         name: '',
@@ -87,6 +93,24 @@ export default function ProfilePage(): JSX.Element | null {
         } finally {
             setSaving(false);
         }
+    };
+
+    // B7: Tìm member theo tên (debounce 400ms)
+    const handleFindQuery = (q: string) => {
+        setFindQuery(q);
+        if (findTimer.current) clearTimeout(findTimer.current);
+        if (!q.trim() || q.trim().length < 2) { setFindResults([]); return; }
+        findTimer.current = setTimeout(async () => {
+            setFindLoading(true);
+            try {
+                const { data } = await API.get<Member[]>('/members', { params: { search: q.trim() } });
+                setFindResults(data);
+            } catch {
+                setFindResults([]);
+            } finally {
+                setFindLoading(false);
+            }
+        }, 400);
     };
 
     const getPlanBadge = (plan?: string) => {
@@ -279,6 +303,63 @@ export default function ProfilePage(): JSX.Element | null {
                     </Card>
                 </Col>
             </Row>
+
+            {/* B7: Tìm tôi trong gia phả */}
+            <Card className="mb-4 shadow-sm">
+                <Card.Header className="bg-white">
+                    <strong>🔍 Tìm tôi trong gia phả</strong>
+                </Card.Header>
+                <Card.Body>
+                    <p className="text-muted small mb-3">
+                        Nhập tên của bạn để tìm xem bạn đã được thêm vào cây gia phả chưa.
+                    </p>
+                    <InputGroup className="mb-3">
+                        <InputGroup.Text>🔍</InputGroup.Text>
+                        <Form.Control
+                            type="text"
+                            placeholder="Nhập họ tên..."
+                            value={findQuery}
+                            onChange={(e) => handleFindQuery(e.target.value)}
+                        />
+                    </InputGroup>
+
+                    {findLoading && <p className="text-muted small">Đang tìm...</p>}
+
+                    {!findLoading && findQuery.length >= 2 && findResults.length === 0 && (
+                        <p className="text-muted small">Không tìm thấy thành viên nào phù hợp.</p>
+                    )}
+
+                    {findResults.length > 0 && (
+                        <div className="d-flex flex-column gap-2">
+                            {findResults.map((m) => (
+                                <div key={m._id} className="d-flex justify-content-between align-items-center p-2 border rounded">
+                                    <div>
+                                        <strong>{m.name}</strong>
+                                        {m.birthday?.solar && (
+                                            <span className="text-muted ms-2 small">
+                                                {new Date(m.birthday.solar).getFullYear()}
+                                            </span>
+                                        )}
+                                        <span className="ms-2 badge bg-light text-dark border">
+                                            {m.gender === 'male' ? 'Nam' : 'Nữ'}
+                                        </span>
+                                    </div>
+                                    {profile.viewCode && (
+                                        <a
+                                            href={`/${profile.viewCode}?highlight=${m._id}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="btn btn-sm btn-outline-primary"
+                                        >
+                                            Xem trong cây ↗
+                                        </a>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Card.Body>
+            </Card>
         </div>
     );
 }

@@ -176,6 +176,7 @@ export interface UserProfile {
   events?: ClanEvent[];
   clanInfo?: ClanInfo;
   visibilitySettings?: VisibilitySettings;
+  viewCode?: string;
 }
 
 // ── Form data ─────────────────────────────────────────────────────────────────
@@ -216,6 +217,51 @@ export interface RegisterFormData {
   name: string;
   email: string;
   password: string;
+}
+
+// ── Cross-tree matching ───────────────────────────────────────────────────────
+export interface CrossTreeMatch {
+  _id: string;
+  treeOwnerA: string;
+  memberA: Pick<Member, '_id' | 'name' | 'birthday' | 'gender' | 'avatar'> | null;
+  viewCodeA?: string;
+  memberAName: string;
+  treeOwnerB: string;
+  memberB: Pick<Member, '_id' | 'name' | 'birthday' | 'gender' | 'avatar'> | null;
+  viewCodeB?: string;
+  memberBName: string;
+  matchFields: string[];
+  matchScore: number;
+  confirmedByA: boolean;
+  confirmedByB: boolean;
+  deniedByA: boolean;
+  deniedByB: boolean;
+  status: 'pending' | 'confirmed' | 'denied';
+  autoSuggestedFrom?: string;
+  crossTreeLinkId?: string;
+  createdAt: string;
+  // Enriched fields (thêm bởi backend)
+  myRole?: 'A' | 'B';
+  myMember?: Pick<Member, '_id' | 'name' | 'birthday' | 'gender' | 'avatar'> | null;
+  theirMember?: Pick<Member, '_id' | 'name' | 'birthday' | 'gender' | 'avatar'> | null;
+  theirViewCode?: string;
+  myConfirmed?: boolean;
+  myDenied?: boolean;
+  theirConfirmed?: boolean;
+}
+
+export interface CrossTreeLink {
+  _id: string;
+  treeOwnerA: { _id: string; name: string; treeName?: string };
+  treeOwnerB: { _id: string; name: string; treeName?: string };
+  viewCodeA?: string;
+  viewCodeB?: string;
+  linkedPairs: Array<{
+    memberA?: Pick<Member, '_id' | 'name' | 'birthday' | 'gender' | 'avatar'>;
+    memberB?: Pick<Member, '_id' | 'name' | 'birthday' | 'gender' | 'avatar'>;
+  }>;
+  status: 'active' | 'dissolved';
+  createdAt: string;
 }
 
 // ── API responses ─────────────────────────────────────────────────────────────
