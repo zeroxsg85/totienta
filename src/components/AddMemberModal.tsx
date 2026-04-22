@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { Modal, Button, Form, InputGroup, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { Member, MemberFormData, Spouse } from '@/types';
+import MemberBasicFields, { BasicMemberData } from './MemberBasicFields';
 import SearchableSelect from './SearchableSelect';
 import SelectChildrenModal from './SelectChildrenModal';
 import '@/styles/Modals.css';
@@ -20,14 +21,18 @@ interface AddMemberModalProps {
 
 const initialMemberState: MemberFormData & { spouseIndex?: number } = {
   name: '',
-  birthday: '',
+  birthday: {},
   gender: 'male',
   maritalStatus: 'single',
   isAlive: true,
   phoneNumber: '',
   address: '',
+  occupation: '',
+  hometown: '',
+  religion: '',
   spouse: undefined,
-  deathDate: '',
+  deathDate: {},
+  anniversaryDate: {},
   parent: null,
   children: [],
   spouseIndex: 0,
@@ -47,27 +52,20 @@ export default function AddMemberModal({
   const [showChildrenModal, setShowChildrenModal] = useState<boolean>(false);
   const isAddParentMode = !!defaultChildId;
 
-  // Reset form khi mở modal
   useEffect(() => {
     if (!show) return;
-
-    const isAddParentMode = !!defaultChildId;
-
     setNewMember({
       ...initialMemberState,
       parent: parentId,
-      maritalStatus: isAddParentMode ? 'married' : 'single', // 👈 CHỐT
+      maritalStatus: isAddParentMode ? 'married' : 'single',
     });
-
     if (isAddParentMode) {
-      setSelectedChildren([defaultChildId]); // 👈 GÁN CON MẶC ĐỊNH
+      setSelectedChildren([defaultChildId!]);
     } else {
       setSelectedChildren([]);
     }
   }, [show, parentId, defaultChildId]);
 
-
-  // Lấy thông tin parent đã chọn
   const selectedParent = parentId
     ? allMembers.find((m) => m._id === parentId)
     : newMember.parent
@@ -77,7 +75,6 @@ export default function AddMemberModal({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const spouse = newMember.spouse as Spouse | undefined;
       await onSubmit({
@@ -87,7 +84,6 @@ export default function AddMemberModal({
         spouse: newMember.maritalStatus === 'married' && spouse ? [spouse] : undefined,
         spouseIndex: newMember.spouseIndex || 0,
       } as any);
-
       setNewMember(initialMemberState);
       setSelectedChildren([]);
       onHide();
@@ -98,19 +94,14 @@ export default function AddMemberModal({
 
   const handleSpouseChange = (field: keyof Spouse, value: string): void => {
     const currentSpouse = (newMember.spouse as Spouse) || {};
-    setNewMember({
-      ...newMember,
-      spouse: { ...currentSpouse, [field]: value },
-    });
+    setNewMember({ ...newMember, spouse: { ...currentSpouse, [field]: value } });
   };
 
-  // Options cho dropdown "Con của"
-  const parentOptions = allMembers.map((m) => ({
-    value: m._id,
-    label: m.name,
-  }));
+  const handleBasicChange = (patch: Partial<BasicMemberData>) =>
+    setNewMember((prev) => ({ ...prev, ...patch }));
 
-  // Tên các con đã chọn
+  const parentOptions = allMembers.map((m) => ({ value: m._id, label: m.name }));
+
   const selectedChildrenNames = selectedChildren
     .map((id) => allMembers.find((m) => m._id === id)?.name)
     .filter(Boolean)
@@ -121,144 +112,45 @@ export default function AddMemberModal({
       <Modal show={show} onHide={onHide} centered fullscreen>
         <Modal.Header closeButton>
           <Modal.Title>
-            <strong>
-              <FontAwesomeIcon icon={faPlusCircle} /> Thêm Thành Viên Mới
-            </strong>
+            <strong><FontAwesomeIcon icon={faPlusCircle} /> Thêm Thành Viên Mới</strong>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            {/* Name */}
-            <InputGroup className="mb-3">
-              <InputGroup.Text>Tên</InputGroup.Text>
-              <Form.Control
-                type="text"
-                value={newMember.name}
-                onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                required
-              />
-            </InputGroup>
+            {/* ── Field chung (name, birthday, gender, phone, address, occupation,
+                hometown, religion, idCard, maritalStatus, isAlive, deathDate…) ── */}
+            <MemberBasicFields
+              data={newMember as BasicMemberData}
+              onChange={handleBasicChange}
+            />
 
-            <Row className="mb-3 d-flex flex-wrap gap-2">
-              {/* Birthday */}
-              <Col xs={12} sm={6} md={3} className="d-flex align-items-center">
-                <InputGroup>
-                  <InputGroup.Text style={{ whiteSpace: 'nowrap' }}>Sinh nhật</InputGroup.Text>
-                  <Form.Control
-                    type="date"
-                    value={newMember.birthday || ''}
-                    onChange={(e) => setNewMember({ ...newMember, birthday: e.target.value })}
-                  />
-                </InputGroup>
-              </Col>
-
-              {/* Gender */}
-              <Col xs={12} sm={6} md={3} className="d-flex align-items-center">
-                <InputGroup>
-                  <InputGroup.Text style={{ whiteSpace: 'nowrap' }}>Giới tính</InputGroup.Text>
-                  <Form.Select
-                    value={newMember.gender}
-                    onChange={(e) =>
-                      setNewMember({
-                        ...newMember,
-                        gender: e.target.value as 'male' | 'female',
-                      })
-                    }
-                    required
-                  >
-                    <option value="male">Nam</option>
-                    <option value="female">Nữ</option>
-                  </Form.Select>
-                </InputGroup>
-              </Col>
-
-              {/* Phone */}
-              <Col xs={12} sm={6} md={3} className="d-flex align-items-center">
-                <InputGroup>
-                  <InputGroup.Text style={{ whiteSpace: 'nowrap' }}>Số điện thoại</InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    value={newMember.phoneNumber || ''}
-                    onChange={(e) => setNewMember({ ...newMember, phoneNumber: e.target.value })}
-                  />
-                </InputGroup>
-              </Col>
-
-              {/* Address */}
-              <Col xs={12} sm={6} md={3} className="d-flex align-items-center">
-                <InputGroup>
-                  <InputGroup.Text style={{ whiteSpace: 'nowrap' }}>Nơi ở</InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    value={newMember.address || ''}
-                    onChange={(e) => setNewMember({ ...newMember, address: e.target.value })}
-                  />
-                </InputGroup>
-              </Col>
-            </Row>
-
-            {/* Marital Status */}
-            <InputGroup className="mb-3">
-              <InputGroup.Text>Hôn nhân</InputGroup.Text>
-              <Form.Select
-                value={newMember.maritalStatus}
-                onChange={(e) =>
-                  setNewMember({
-                    ...newMember,
-                    maritalStatus: e.target.value as MemberFormData['maritalStatus'],
-                  })
-                }
-                required
-              >
-                <option value="single">Độc thân</option>
-                <option value="married">Đã kết hôn</option>
-                <option value="divorced">Ly hôn</option>
-                <option value="widowed">Góa</option>
-              </Form.Select>
-            </InputGroup>
-
-            {/* Spouse Info */}
+            {/* Thông tin vợ/chồng */}
             {newMember.maritalStatus === 'married' && (
               <>
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    {newMember.gender === 'male' ? 'Tên vợ' : 'Tên chồng'}
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
+                  <InputGroup.Text>{newMember.gender === 'male' ? 'Tên vợ' : 'Tên chồng'}</InputGroup.Text>
+                  <Form.Control type="text"
                     value={(newMember.spouse as Spouse)?.name || ''}
                     onChange={(e) => handleSpouseChange('name', e.target.value)}
                   />
                 </InputGroup>
-
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    Quê quán {newMember.gender === 'male' ? 'vợ' : 'chồng'}
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
+                  <InputGroup.Text>Quê quán {newMember.gender === 'male' ? 'vợ' : 'chồng'}</InputGroup.Text>
+                  <Form.Control type="text"
                     value={(newMember.spouse as Spouse)?.hometown || ''}
                     onChange={(e) => handleSpouseChange('hometown', e.target.value)}
                   />
                 </InputGroup>
-
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    Số điện thoại {newMember.gender === 'male' ? 'vợ' : 'chồng'}
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
+                  <InputGroup.Text>SĐT {newMember.gender === 'male' ? 'vợ' : 'chồng'}</InputGroup.Text>
+                  <Form.Control type="text"
                     value={(newMember.spouse as Spouse)?.phoneNumber || ''}
                     onChange={(e) => handleSpouseChange('phoneNumber', e.target.value)}
                   />
                 </InputGroup>
-
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    Sinh nhật {newMember.gender === 'male' ? 'vợ' : 'chồng'}
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="date"
+                  <InputGroup.Text>Sinh nhật {newMember.gender === 'male' ? 'vợ' : 'chồng'}</InputGroup.Text>
+                  <Form.Control type="date"
                     value={(newMember.spouse as Spouse)?.birthday || ''}
                     onChange={(e) => handleSpouseChange('birthday', e.target.value)}
                   />
@@ -266,21 +158,12 @@ export default function AddMemberModal({
               </>
             )}
 
-            {/* Parent Selection */}
+            {/* Con của */}
             <InputGroup className="mb-3">
-              <InputGroup.Text>
-                {isAddParentMode ? 'Cha/mẹ của' : 'Con của'}
-              </InputGroup.Text>
+              <InputGroup.Text>{isAddParentMode ? 'Cha/mẹ của' : 'Con của'}</InputGroup.Text>
               {parentId ? (
-                // Đã chọn parent từ trước - hiển thị readonly
-                <Form.Control
-                  type="text"
-                  value={selectedParent?.name || ''}
-                  disabled
-                  className="bg-light"
-                />
+                <Form.Control type="text" value={selectedParent?.name || ''} disabled className="bg-light" />
               ) : (
-                // Chưa chọn - cho phép tìm kiếm
                 <div className="flex-grow-1">
                   <SearchableSelect
                     options={parentOptions}
@@ -293,17 +176,13 @@ export default function AddMemberModal({
               )}
             </InputGroup>
 
-            {/* Spouse Index - nếu parent có nhiều vợ/chồng */}
+            {/* Spouse Index */}
             {selectedParent && selectedParent.spouse && selectedParent.spouse.length > 1 && (
               <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  Con của {selectedParent.gender === 'male' ? 'vợ' : 'chồng'}
-                </InputGroup.Text>
+                <InputGroup.Text>Con của {selectedParent.gender === 'male' ? 'vợ' : 'chồng'}</InputGroup.Text>
                 <Form.Select
                   value={newMember.spouseIndex || 0}
-                  onChange={(e) =>
-                    setNewMember({ ...newMember, spouseIndex: parseInt(e.target.value) })
-                  }
+                  onChange={(e) => setNewMember({ ...newMember, spouseIndex: parseInt(e.target.value) })}
                 >
                   {selectedParent.spouse.map((spouse, idx) => (
                     <option key={idx} value={idx}>
@@ -315,13 +194,11 @@ export default function AddMemberModal({
               </InputGroup>
             )}
 
-            {/* Children Selection */}
+            {/* Chọn con */}
             <InputGroup className="mb-3">
               <InputGroup.Text>Chọn con</InputGroup.Text>
               <Form.Control
-                type="text"
-                value={selectedChildrenNames || 'Chưa chọn'}
-                readOnly
+                type="text" value={selectedChildrenNames || 'Chưa chọn'} readOnly
                 onClick={() => setShowChildrenModal(true)}
                 style={{ cursor: 'pointer', backgroundColor: '#fff' }}
               />
@@ -330,32 +207,8 @@ export default function AddMemberModal({
               </Button>
             </InputGroup>
 
-            {/* Is Alive */}
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="checkbox"
-                label="Còn sống"
-                checked={newMember.isAlive}
-                onChange={(e) => setNewMember({ ...newMember, isAlive: e.target.checked })}
-              />
-            </Form.Group>
-
-            {/* Death Date */}
-            {!newMember.isAlive && (
-              <InputGroup className="mb-3">
-                <InputGroup.Text>Ngày mất</InputGroup.Text>
-                <Form.Control
-                  type="date"
-                  value={newMember.deathDate || ''}
-                  onChange={(e) => setNewMember({ ...newMember, deathDate: e.target.value })}
-                />
-              </InputGroup>
-            )}
-
             <Modal.Footer>
-              <Button variant="secondary" onClick={onHide} disabled={loading}>
-                Hủy
-              </Button>
+              <Button variant="secondary" onClick={onHide} disabled={loading}>Hủy</Button>
               <Button type="submit" variant="primary" disabled={loading}>
                 {loading ? 'Đang thêm...' : 'Thêm'}
               </Button>
@@ -364,7 +217,6 @@ export default function AddMemberModal({
         </Modal.Body>
       </Modal>
 
-      {/* Modal chọn con */}
       <SelectChildrenModal
         show={showChildrenModal}
         onHide={() => setShowChildrenModal(false)}
@@ -378,7 +230,6 @@ export default function AddMemberModal({
           }
         }}
       />
-
     </>
   );
 }

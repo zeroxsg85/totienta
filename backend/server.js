@@ -23,6 +23,8 @@ const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
 const suggestionRoutes = require('./routes/suggestionRoutes');
 app.use('/api/suggestions', suggestionRoutes);
+const clanRoutes = require('./routes/clanRoutes');
+app.use('/api/clan', clanRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {

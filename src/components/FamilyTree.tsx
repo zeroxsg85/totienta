@@ -95,11 +95,13 @@ const FamilyTree = forwardRef<HTMLDivElement, FamilyTreeProps>(({
 
     const children = node.children as Member[];
     const sortedChildren = [...(children || [])].sort((a, b) => {
-      // Sắp xếp theo spouseIndex trước, rồi theo birthday
+      // Sắp xếp theo spouseIndex trước, rồi theo birthday solar
       const spouseCompare = (a.spouseIndex || 0) - (b.spouseIndex || 0);
       if (spouseCompare !== 0) return spouseCompare;
-      if (!a.birthday || !b.birthday) return 0;
-      return new Date(a.birthday).getTime() - new Date(b.birthday).getTime();
+      const aDate = a.birthday?.solar;
+      const bDate = b.birthday?.solar;
+      if (!aDate || !bDate) return 0;
+      return new Date(aDate).getTime() - new Date(bDate).getTime();
     });
 
     const showAllChildren = nodeMatches || parentMatched;

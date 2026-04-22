@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button, Form, InputGroup } from 'react-bootstrap';
+import { Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faExpand, faCamera, faLink, faLightbulb, faPhoneAlt } from '@fortawesome/free-solid-svg-icons';
 import html2canvas from 'html2canvas';
@@ -21,6 +21,16 @@ interface ViewAccessClientProps {
   viewCode: string;
 }
 
+function getCurrentUserIdFromToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.id || payload._id || null;
+  } catch { return null; }
+}
+
 export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): JSX.Element {
   const searchParams = useSearchParams();
   const treeRef = useRef<HTMLDivElement>(null);
@@ -37,6 +47,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
   const [exporting, setExporting] = useState<boolean>(false);
   const [showSuggestionModal, setShowSuggestionModal] = useState<boolean>(false);
   const [hideFemale, setHideFemale] = useState<boolean>(false);
+  const [showSuggestionPrompt, setShowSuggestionPrompt] = useState(false);
 
   const baseUrl =
     typeof window !== "undefined" && window.location.hostname === "localhost"
@@ -152,6 +163,24 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
 
     fetchFamilyTreeByViewCode();
   }, [viewCode]);
+
+  useEffect(() => {
+    if (!allMembers.length) return;
+
+    // Check if already permanently dismissed for this viewCode
+    const neverKey = `suggest_never_${viewCode}`;
+    const laterKey = `suggest_later_${viewCode}`;
+    if (localStorage.getItem(neverKey)) return;
+    if (sessionStorage.getItem(laterKey)) return;
+
+    // Check if current user is the tree owner
+    const currentUserId = getCurrentUserIdFromToken();
+    const treeOwnerId = allMembers[0]?.createdBy;
+    if (currentUserId && treeOwnerId && currentUserId === String(treeOwnerId)) return;
+
+    const timer = setTimeout(() => setShowSuggestionPrompt(true), 60000);
+    return () => clearTimeout(timer);
+  }, [allMembers, viewCode]);
 
   const handleMemberClick = (member: Member): void => {
     setSelectedMember(member);
@@ -551,6 +580,53 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         viewCode={viewCode}
         allMembers={allMembers}
       />
+
+      {/* Suggestion Prompt Modal */}
+      <Modal show={showSuggestionPrompt} onHide={() => {
+        sessionStorage.setItem(`suggest_later_${viewCode}`, '1');
+        setShowSuggestionPrompt(false);
+      }} centered size="sm">
+        <Modal.Header closeButton>
+          <Modal.Title style={{ fontSize: '1rem' }}>👨‍👩‍👧‍👦 Bạn có trong gia phả này?</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <p className="text-muted small mb-3">
+            Nếu bạn là thành viên của gia đình này, hãy đề xuất để được thêm vào gia phả!
+          </p>
+          <div className="d-grid gap-2">
+            <Button
+              variant="warning"
+              onClick={() => {
+                setShowSuggestionPrompt(false);
+                setShowSuggestionModal(true);
+              }}
+            >
+              <FontAwesomeIcon icon={faLightbulb} /> Đề xuất thêm tôi vào
+            </Button>
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              onClick={() => {
+                sessionStorage.setItem(`suggest_later_${viewCode}`, '1');
+                setShowSuggestionPrompt(false);
+              }}
+            >
+              🕐 Nhắc lại sau
+            </Button>
+            <Button
+              variant="link"
+              size="sm"
+              className="text-muted"
+              onClick={() => {
+                localStorage.setItem(`suggest_never_${viewCode}`, '1');
+                setShowSuggestionPrompt(false);
+              }}
+            >
+              Không nhắc nữa
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

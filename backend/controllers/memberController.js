@@ -142,35 +142,73 @@ const getViewCode = async (req, res) => {
     }
 };
 
-// Kiểm tra mã xác thực hợp lệ và lấy cây gia phả
+// ── Visibility helpers ────────────────────────────────────────────────────────
+const VISIBILITY_FIELDS = ['phoneNumber', 'birthday', 'address', 'idCard', 'occupation',
+    'hometown', 'religion', 'spouse', 'memorial', 'burial', 'legacy', 'shrine'];
+const LEVEL_ORDER = { public: 0, login: 1, member: 2 };
+
+function applyVisibility(memberObj, level, settings = {}) {
+    const userLevel = LEVEL_ORDER[level] ?? 0;
+    const filtered = { ...memberObj };
+    VISIBILITY_FIELDS.forEach((field) => {
+        const required = settings[field] || (
+            ['occupation', 'hometown', 'religion', 'memorial'].includes(field) ? 'public' : 'member'
+        );
+        if (userLevel < (LEVEL_ORDER[required] ?? 0)) {
+            delete filtered[field];
+        }
+    });
+    return filtered;
+}
+
+// Kiểm tra mã xác thực hợp lệ và lấy cây gia phả (với visibility filtering)
 const getFamilyTreeByViewCode = async (req, res) => {
     try {
         const { viewCode } = req.params;
+        const User = require('../models/User');
+        const jwt = require('jsonwebtoken');
 
-        // Lấy tất cả thành viên của người dùng và populate children
-        const members = await Member.find({ viewCode: viewCode }).populate({
-            path: 'children', // Populate các đối tượng children
-            populate: { path: 'children' }, // Populate đệ quy (nếu có con cháu)
-        });
+        // Lấy tất cả thành viên
+        const members = await Member.find({ viewCode });
+        if (!members.length) return res.status(200).json([]);
 
-        // Tạo bản đồ thành viên
+        // Xác định treeOwner
+        const treeOwnerId = members[0]?.createdBy?.toString();
+
+        // Xác định access level của người gọi
+        let level = 'public';
+        const authHeader = req.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+            try {
+                const decoded = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET);
+                const callerId = (decoded.id || decoded._id)?.toString();
+                level = callerId === treeOwnerId ? 'member' : 'login';
+            } catch { /* token không hợp lệ → public */ }
+        }
+
+        // Lấy visibility settings của owner
+        let visSettings = {};
+        if (treeOwnerId) {
+            const owner = await User.findById(treeOwnerId).select('visibilitySettings');
+            visSettings = owner?.visibilitySettings?.toObject?.() || owner?.visibilitySettings || {};
+        }
+
+        // Tạo bản đồ thành viên (đã filter visibility)
         const memberMap = new Map();
-        members.forEach((member) => {
-            memberMap.set(member._id.toString(), { ...member.toObject(), children: [] });
+        members.forEach((m) => {
+            const obj = applyVisibility(m.toObject(), level, visSettings);
+            memberMap.set(m._id.toString(), { ...obj, children: [] });
         });
 
-        // Liên kết các thành viên với cha/mẹ
-        members.forEach((member) => {
-            if (member.parent) {
-                const parent = memberMap.get(member.parent.toString());
-                if (parent) {
-                    parent.children.push(memberMap.get(member._id.toString()));
-                }
+        // Liên kết cha/mẹ
+        members.forEach((m) => {
+            if (m.parent) {
+                const parent = memberMap.get(m.parent.toString());
+                if (parent) parent.children.push(memberMap.get(m._id.toString()));
             }
         });
 
-        // Lọc ra thành viên gốc (không có cha/mẹ)
-        const rootMembers = Array.from(memberMap.values()).filter((member) => !member.parent);
+        const rootMembers = Array.from(memberMap.values()).filter((m) => !m.parent);
         res.status(200).json(rootMembers);
     } catch (error) {
         res.status(500).json({ message: 'Không thể lấy cây gia phả', error });
@@ -199,8 +237,16 @@ const createMember = async (req, res) => {
             isAlive,
             phoneNumber,
             address,
+            occupation,
+            hometown,
+            religion,
             spouse,
             deathDate,
+            anniversaryDate,
+            memorial,
+            burial,
+            shrine,
+            legacy,
             parent,      // dùng khi thêm CON
             children = [], // dùng khi thêm CHA/MẸ
             customFields = []
@@ -210,13 +256,21 @@ const createMember = async (req, res) => {
         const newMember = new Member({
             name,
             gender,
-            birthday,
+            birthday: birthday || undefined,
             maritalStatus,
             isAlive,
             phoneNumber,
             address,
+            occupation,
+            hometown,
+            religion,
             spouse: maritalStatus === 'married' ? spouse : [],
-            deathDate: isAlive ? null : deathDate,
+            deathDate: isAlive ? undefined : (deathDate || undefined),
+            anniversaryDate: anniversaryDate || undefined,
+            memorial: memorial || undefined,
+            burial: burial || undefined,
+            shrine: shrine || undefined,
+            legacy: legacy || undefined,
             parent: parent || null,
             children: children || [],
             customFields,
@@ -257,9 +311,9 @@ const updateMember = async (req, res) => {
 
         const updateData = req.body;
 
-        // Nếu isAlive === false thì bắt buộc phải có ngày mất
-        if (updateData.isAlive === false && !updateData.deathDate) {
-            updateData.deathDate = new Date();
+        // Nếu isAlive === false thì bắt buộc phải có ngày mất (solar)
+        if (updateData.isAlive === false && !updateData.deathDate?.solar) {
+            updateData.deathDate = { solar: new Date() };
         }
 
         const updatedMember = await Member.findByIdAndUpdate(req.params.id, updateData, { new: true });

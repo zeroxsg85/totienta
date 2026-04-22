@@ -1,15 +1,31 @@
 const mongoose = require('mongoose');
 
+const lunarDateSchema = new mongoose.Schema(
+    {
+        day: { type: Number },
+        month: { type: Number },
+        year: { type: Number },
+        isLeap: { type: Boolean, default: false },
+    },
+    { _id: false }
+);
+
 const memberSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
         gender: { type: String, enum: ['male', 'female'], required: true },
-        birthday: { type: Date },
+        birthday: {
+            solar: { type: Date },
+            lunar: { type: lunarDateSchema },
+        },
         maritalStatus: { type: String, enum: ['single', 'married', 'divorced', 'widowed'], required: true },
         isAlive: { type: Boolean, required: true },
         avatar: { type: String },
         phoneNumber: { type: String },
         address: { type: String },
+        occupation: { type: String },
+        hometown: { type: String },
+        religion: { type: String },
         spouse: [
             {
                 name: { type: String, required: true },
@@ -18,10 +34,73 @@ const memberSchema = new mongoose.Schema(
                 hometown: { type: String },
             }
         ],
-        deathDate: { type: Date },
+        deathDate: {
+            solar: { type: Date },
+            lunar: { type: lunarDateSchema },
+        },
+        // Ngày giỗ có thể khác ngày mất (rút lên 1 ngày, v.v.)
+        anniversaryDate: {
+            lunar: {
+                type: new mongoose.Schema(
+                    {
+                        day: { type: Number },
+                        month: { type: Number },
+                    },
+                    { _id: false }
+                ),
+            },
+            note: { type: String },
+        },
+        memorial: {
+            biography: { type: String },
+            epitaph: { type: String },
+            photos: [{ type: String }],
+            videos: [{ type: String }],
+            audioUrl: { type: String },
+            achievements: [{ type: String }],
+            story: { type: String },
+        },
+        burial: {
+            location: { type: String },
+            coordinates: {
+                lat: { type: Number },
+                lng: { type: Number },
+            },
+            photo: { type: String },
+            lastVisited: { type: Date },
+        },
+        // Giấy tờ tùy thân (CCCD / CMND / Passport) – dùng để xác định danh tính
+        idCard: {
+            number: { type: String },
+            type:   { type: String, enum: ['cccd', 'cmnd', 'passport', 'other'], default: 'cccd' },
+        },
+
+        shrine: {
+            isEnabled: { type: Boolean, default: false },
+            backgroundTheme: { type: String },
+            incenseCount: { type: Number, default: 0 },
+            lastIncense: { type: Date },
+            offerings: [{ type: String }], // danh sách nổi bật do chủ cây chọn
+            offeringStats: [{              // thống kê lễ vật được dâng
+                label: { type: String },
+                count: { type: Number, default: 0 },
+                lastOffered: { type: Date },
+            }],
+        },
+        legacy: {
+            messages: [
+                {
+                    content: { type: String },
+                    scheduledAt: { type: Date },
+                    toWhom: { type: String },
+                }
+            ],
+            voiceCloneUrl: { type: String },
+            lastWords: { type: String },
+        },
         parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
         children: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Member' }],
-        spouseIndex: { type: Number, default: 0 }, // 👈 Con của vợ/chồng thứ mấy (0 = đầu tiên)
+        spouseIndex: { type: Number, default: 0 },
         order: { type: Number, default: 0 },
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         viewCode: { type: String, sparse: true },

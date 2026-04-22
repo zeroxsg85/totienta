@@ -92,16 +92,17 @@ const approveSuggestion = async (req, res) => {
             const { name, gender, birthday, phoneNumber, address, parentId, spouseIndex, isAlive, deathDate } =
                 suggestion.newMemberData;
 
+            // Suggestion lưu birthday/deathDate dạng Date string → bọc vào DualDate
             const newMember = await Member.create({
                 name,
                 gender: gender || 'male',
-                birthday,
+                birthday: birthday ? { solar: birthday } : undefined,
                 phoneNumber,
                 address,
                 parent: parentId || null,
                 spouseIndex: spouseIndex || 0,
                 isAlive: isAlive !== false,
-                deathDate,
+                deathDate: deathDate ? { solar: deathDate } : undefined,
                 maritalStatus: 'single',
                 createdBy: req.user._id,
                 viewCode: suggestion.viewCode,
@@ -124,7 +125,7 @@ const approveSuggestion = async (req, res) => {
 
                 // Xử lý các field đặc biệt
                 if (field === 'birthday' || field === 'deathDate') {
-                    updateData[field] = newValue ? new Date(newValue) : null;
+                    updateData[field] = newValue ? { solar: new Date(newValue) } : null;
                 } else if (field === 'isAlive') {
                     updateData[field] = newValue === 'true' || newValue === true;
                 } else {

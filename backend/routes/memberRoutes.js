@@ -1,22 +1,34 @@
 const express = require('express');
 const multer = require("multer");
 const { getAllMembers, createMember, updateMember, deleteMember, getFamilyTree, getAllMembersFlat, generateViewCode, updateViewCode, getFamilyTreeByViewCode, getViewCode, uploadMemberAvatar, getTreeInfo } = require('../controllers/memberController');
-const authMiddleware = require('../middlewares/authMiddleware'); // Import middleware
+const { burnIncense, offerItem, getMemberShrinePublic, getShrineLog, resetShrine } = require('../controllers/clanController');
+const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() }); // Sử dụng bộ nhớ tạm
+const upload = multer({ storage: multer.memoryStorage() });
 
-// API Routes
-router.get('/', authMiddleware, getAllMembers); // Lấy danh sách tất cả thành viên
-router.post('/', authMiddleware, createMember); // Thêm thành viên mới
-router.put('/:id', authMiddleware, updateMember); // Cập nhật thông tin thành viên
-router.delete('/:id', authMiddleware, deleteMember); // Xóa thành viên
+// ── Authenticated routes ───────────────────────────────────────────────────────
+router.get('/', authMiddleware, getAllMembers);
+router.post('/', authMiddleware, createMember);
+router.put('/:id', authMiddleware, updateMember);
+router.delete('/:id', authMiddleware, deleteMember);
 router.get('/family-tree', authMiddleware, getFamilyTree);
 router.get('/all', authMiddleware, getAllMembersFlat);
-router.post('/generate-view-code', authMiddleware, generateViewCode); // 🔐 Chỉ người quản lý mới tạo mã
+router.post('/generate-view-code', authMiddleware, generateViewCode);
 router.get('/view-code', authMiddleware, getViewCode);
-router.get('/view/:viewCode', getFamilyTreeByViewCode);
 router.post('/update-view-code', authMiddleware, updateViewCode);
 router.post('/upload-avatar', authMiddleware, upload.single('avatar'), uploadMemberAvatar);
+
+// ── Public routes ─────────────────────────────────────────────────────────────
+router.get('/view/:viewCode', getFamilyTreeByViewCode);
 router.get('/tree-info/:viewCode', getTreeInfo);
+
+// Bàn thờ số – public (không cần đăng nhập)
+router.get('/:id/shrine-public', getMemberShrinePublic);         // dữ liệu bàn thờ
+router.get('/:id/shrine/logs', getShrineLog);                    // lịch sử hoạt động
+router.post('/:id/shrine/incense', burnIncense);                 // thắp nhang
+router.post('/:id/shrine/offering', offerItem);                  // dâng lễ vật
+
+// Bàn thờ số – cần đăng nhập (admin)
+router.delete('/:id/shrine/reset', authMiddleware, resetShrine); // reset nhang/lễ vật
 
 module.exports = router;

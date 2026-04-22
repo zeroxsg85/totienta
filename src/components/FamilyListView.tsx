@@ -106,8 +106,10 @@ export default function FamilyListView({
         }
 
         return filtered.sort((a, b) => {
-            if (!a.birthday || !b.birthday) return 0;
-            return new Date(a.birthday).getTime() - new Date(b.birthday).getTime();
+            const aDate = a.birthday?.solar;
+            const bDate = b.birthday?.solar;
+            if (!aDate || !bDate) return 0;
+            return new Date(aDate).getTime() - new Date(bDate).getTime();
         });
     };
 
@@ -195,8 +197,8 @@ export default function FamilyListView({
                             {getDisplayName(member.name)}
                         </div>
                         <div className="member-meta">
-                            {member.birthday && (
-                                <small>📅 {new Date(member.birthday).getFullYear()}</small>
+                            {member.birthday?.solar && (
+                                <small>📅 {new Date(member.birthday.solar).getFullYear()}</small>
                             )}
                             {member.phoneNumber && (
                                 <small className="ms-2">📞 {member.phoneNumber}</small>

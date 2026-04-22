@@ -93,6 +93,11 @@ export default function Navbar(): JSX.Element {
                     )}
                   </Link>
                 </li>
+                <li className={`nav-item ${pathname === '/clan' ? 'active' : ''}`}>
+                  <Link className="nav-link" href="/clan" onClick={closeMenu}>
+                    Dòng Họ
+                  </Link>
+                </li>
               </>
             )}
           </ul>
