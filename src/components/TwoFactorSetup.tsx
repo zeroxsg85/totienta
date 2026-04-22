@@ -2,39 +2,61 @@
 
 /**
  * TwoFactorSetup – Component quản lý 2FA trong trang Profile > Bảo mật
- * Trạng thái: disabled → setup (hiện QR) → verify (nhập OTP) → enabled
+ * Fix: OtpInput không dùng nested component (gây mất focus mỗi keystroke)
  */
 
-import { useState, useEffect } from 'react';
-import { Button, Form, InputGroup, Spinner, Badge } from 'react-bootstrap';
+import { useState, useEffect, useRef } from 'react';
+import { Button, Spinner, Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 import API from '@/lib/api';
 
-type Step = 'loading' | 'disabled' | 'setup' | 'verify' | 'enabled' | 'disabling';
+type Step = 'loading' | 'disabled' | 'setup' | 'enabled' | 'disabling';
+
+// Link tải app xác thực
+const AUTH_APPS = [
+    {
+        name: 'Google Authenticator',
+        ios: 'https://apps.apple.com/app/google-authenticator/id388497605',
+        android: 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2',
+    },
+    {
+        name: 'Microsoft Authenticator',
+        ios: 'https://apps.apple.com/app/microsoft-authenticator/id983156458',
+        android: 'https://play.google.com/store/apps/details?id=com.azure.authenticator',
+    },
+];
 
 export default function TwoFactorSetup() {
-    const [step, setStep] = useState<Step>('loading');
-    const [qrCode, setQrCode] = useState('');
+    const [step, setStep]           = useState<Step>('loading');
+    const [qrCode, setQrCode]       = useState('');
     const [manualCode, setManualCode] = useState('');
-    const [otp, setOtp] = useState('');
-    const [working, setWorking] = useState(false);
+    const [otp, setOtp]             = useState('');
+    const [working, setWorking]     = useState(false);
     const [showManual, setShowManual] = useState(false);
+    const [showApps, setShowApps]   = useState(false);
+    const otpRef = useRef<HTMLInputElement>(null);
 
-    // Lấy trạng thái 2FA hiện tại
     useEffect(() => {
         API.get<{ enabled: boolean }>('/users/2fa/status')
             .then(({ data }) => setStep(data.enabled ? 'enabled' : 'disabled'))
             .catch(() => setStep('disabled'));
     }, []);
 
-    // ── Bắt đầu setup: lấy QR code từ server ────────────────────────────────────
+    // Focus input khi chuyển sang bước nhập OTP
+    useEffect(() => {
+        if (step === 'setup' || step === 'disabling') {
+            setTimeout(() => otpRef.current?.focus(), 100);
+        }
+    }, [step]);
+
     const handleStartSetup = async () => {
         setWorking(true);
         try {
             const { data } = await API.post<{ qrCode: string; manualCode: string }>('/users/2fa/setup');
             setQrCode(data.qrCode);
             setManualCode(data.manualCode);
+            setOtp('');
             setStep('setup');
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Không thể khởi tạo 2FA');
@@ -43,7 +65,6 @@ export default function TwoFactorSetup() {
         }
     };
 
-    // ── Xác nhận OTP để bật 2FA ──────────────────────────────────────────────────
     const handleVerify = async () => {
         if (otp.length < 6) return;
         setWorking(true);
@@ -56,12 +77,12 @@ export default function TwoFactorSetup() {
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Mã không đúng, thử lại');
             setOtp('');
+            otpRef.current?.focus();
         } finally {
             setWorking(false);
         }
     };
 
-    // ── Tắt 2FA ──────────────────────────────────────────────────────────────────
     const handleDisable = async () => {
         if (otp.length < 6) return;
         setWorking(true);
@@ -73,47 +94,78 @@ export default function TwoFactorSetup() {
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Mã không đúng, thử lại');
             setOtp('');
+            otpRef.current?.focus();
         } finally {
             setWorking(false);
         }
     };
 
-    // ── OTP input chung ──────────────────────────────────────────────────────────
-    const OtpInput = ({ onSubmit, submitLabel }: { onSubmit: () => void; submitLabel: string }) => (
+    const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+        setOtp(val);
+    };
+
+    // ── OTP input JSX (inline, không phải nested component) ──────────────────────
+    const otpInput = (onSubmit: () => void, submitLabel: string, cancelStep: Step = 'disabled') => (
         <div>
-            <p className="text-muted small mb-2">
-                Nhập mã 6 chữ số từ ứng dụng Authenticator:
-            </p>
-            <InputGroup className="mb-2" style={{ maxWidth: 260 }}>
-                <Form.Control
+            <p className="text-muted small mb-2">Nhập mã 6 chữ số từ ứng dụng Authenticator:</p>
+            <div className="mb-2" style={{ maxWidth: 220 }}>
+                <input
+                    ref={otpRef}
                     type="text"
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     maxLength={6}
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    onChange={handleOtpChange}
+                    onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
                     placeholder="000000"
-                    style={{ fontSize: '1.4rem', letterSpacing: '0.4rem', fontFamily: 'monospace', textAlign: 'center' }}
+                    className="form-control"
+                    style={{
+                        fontSize: '1.6rem',
+                        letterSpacing: '0.5rem',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                    }}
                 />
-            </InputGroup>
+            </div>
             <div className="d-flex gap-2">
-                <Button
-                    variant="primary"
-                    size="sm"
-                    disabled={working || otp.length < 6}
-                    onClick={onSubmit}
-                >
+                <Button variant="primary" size="sm"
+                    disabled={working || otp.length < 6} onClick={onSubmit}>
                     {working ? <Spinner size="sm" /> : submitLabel}
                 </Button>
                 <Button variant="outline-secondary" size="sm"
-                    onClick={() => { setStep('disabled'); setOtp(''); }}>
+                    onClick={() => { setStep(cancelStep); setOtp(''); }}>
                     Hủy
                 </Button>
             </div>
         </div>
     );
 
-    // ── Render theo từng step ─────────────────────────────────────────────────────
+    // ── App download links ────────────────────────────────────────────────────────
+    const appLinks = (
+        <div className="mt-3">
+            <button className="btn btn-link btn-sm p-0 text-muted"
+                onClick={() => setShowApps(!showApps)}>
+                📱 Chưa có app xác thực? Tải tại đây
+            </button>
+            {showApps && (
+                <div className="mt-2 d-flex flex-column gap-2">
+                    {AUTH_APPS.map((app) => (
+                        <div key={app.name} className="d-flex align-items-center gap-2">
+                            <span className="small fw-semibold" style={{ minWidth: 180 }}>{app.name}</span>
+                            <a href={app.ios} target="_blank" rel="noreferrer"
+                                className="btn btn-outline-secondary btn-sm py-0">🍎 iOS</a>
+                            <a href={app.android} target="_blank" rel="noreferrer"
+                                className="btn btn-outline-secondary btn-sm py-0">🤖 Android</a>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    // ── Render ────────────────────────────────────────────────────────────────────
     if (step === 'loading') return <Spinner size="sm" />;
 
     if (step === 'enabled') return (
@@ -134,22 +186,25 @@ export default function TwoFactorSetup() {
             <p className="text-warning small mb-2">
                 ⚠️ Nhập mã từ Authenticator để xác nhận tắt 2FA:
             </p>
-            <OtpInput onSubmit={handleDisable} submitLabel="Xác nhận tắt" />
+            {otpInput(handleDisable, 'Xác nhận tắt', 'enabled')}
         </div>
     );
 
     if (step === 'setup') return (
         <div>
-            <p className="small mb-2">
-                <strong>Bước 1:</strong> Mở <strong>Google Authenticator</strong> hoặc{' '}
-                <strong>Microsoft Authenticator</strong> → nhấn <strong>+</strong> → quét mã QR bên dưới:
+            {/* Bước 1: QR */}
+            <p className="small fw-semibold mb-1">Bước 1 — Quét mã QR bằng app Authenticator</p>
+            <p className="text-muted small mb-2">
+                Mở app → nhấn <strong>+</strong> → chọn <em>Quét mã QR</em>
             </p>
-            <div className="mb-3">
-                {qrCode && (
+
+            {qrCode && (
+                <div className="mb-2">
                     <Image src={qrCode} alt="QR Code 2FA" width={200} height={200}
                         style={{ border: '4px solid #dee2e6', borderRadius: 8 }} />
-                )}
-            </div>
+                </div>
+            )}
+
             <p className="small text-muted mb-1">
                 Không quét được?{' '}
                 <button className="btn btn-link btn-sm p-0"
@@ -158,31 +213,31 @@ export default function TwoFactorSetup() {
                 </button>
             </p>
             {showManual && (
-                <div className="mb-3 p-2 bg-light rounded" style={{ fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all' }}>
+                <div className="mb-3 p-2 bg-light rounded"
+                    style={{ fontFamily: 'monospace', fontSize: '0.8rem', wordBreak: 'break-all', maxWidth: 320 }}>
                     {manualCode}
                 </div>
             )}
-            <p className="small mb-2">
-                <strong>Bước 2:</strong> Nhập mã 6 chữ số từ app để xác nhận:
-            </p>
-            <OtpInput onSubmit={handleVerify} submitLabel="Bật 2FA" />
-        </div>
-    );
 
-    if (step === 'verify') return (
-        <OtpInput onSubmit={handleVerify} submitLabel="Xác nhận" />
+            {appLinks}
+
+            {/* Bước 2: OTP */}
+            <p className="small fw-semibold mt-3 mb-1">Bước 2 — Nhập mã để xác nhận</p>
+            {otpInput(handleVerify, 'Bật 2FA')}
+        </div>
     );
 
     // disabled
     return (
         <div>
-            <div className="d-flex align-items-center gap-2 mb-2">
+            <div className="d-flex align-items-center gap-2 mb-3">
                 <Badge bg="secondary">Chưa bật</Badge>
                 <span className="text-muted small">Tài khoản chưa có xác thực 2 bước.</span>
             </div>
             <Button variant="outline-success" size="sm" onClick={handleStartSetup} disabled={working}>
                 {working ? <Spinner size="sm" /> : '🔒 Bật 2FA'}
             </Button>
+            {appLinks}
         </div>
     );
 }

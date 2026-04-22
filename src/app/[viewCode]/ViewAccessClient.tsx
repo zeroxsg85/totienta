@@ -332,14 +332,11 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
         <>
           {/* Hidden FamilyTree for export */}
           {familyTree && familyTree.length > 0 && (
-            <div
-              className="list-tree"
-              style={{ position: 'absolute', left: '-9999px', top: 0 }}
-            >
+            <div className="list-tree" style={{ position: "absolute", left: "-9999px", top: 0 }}>
               <FamilyTree
                 ref={treeRef}
                 familyTree={familyTree}
-                onMemberClick={() => { }}
+                onMemberClick={() => {}}
                 isEditable={false}
                 searchTerm={searchTerm}
                 hideFemale={hideFemale}
@@ -349,31 +346,20 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
 
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
-            <Button
-              variant="outline-success"
-              size="sm"
-              onClick={handleExportImage}
-              disabled={exporting}
-              title="Xuất ảnh"
-            >
+            <Button variant="outline-success" size="sm" onClick={handleExportImage} disabled={exporting} title="Xuất ảnh">
               <FontAwesomeIcon icon={faCamera} />
             </Button>
 
             <Button
-              variant={hideFemale ? 'warning' : 'outline-warning'}
+              variant={hideFemale ? "warning" : "outline-warning"}
               size="sm"
               onClick={() => setHideFemale(!hideFemale)}
-              title={hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+              title={hideFemale ? "Hiện nữ" : "Ẩn nữ"}
             >
               👩
             </Button>
 
-            <Button
-              variant="warning"
-              size="sm"
-              onClick={() => setShowSuggestionModal(true)}
-              className="btn-suggest-pulse"
-            >
+            <Button variant="warning" size="sm" onClick={() => setShowSuggestionModal(true)} className="btn-suggest-pulse">
               💡
             </Button>
           </div>
@@ -421,7 +407,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
-                <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
+                <Button variant="outline-secondary" onClick={() => setSearchTerm("")}>
                   ✕
                 </Button>
               )}
@@ -431,12 +417,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
           {/* Mobile Content - ListView only */}
           <div className="mobile-content-area">
             {familyTree && familyTree.length > 0 ? (
-              <FamilyListView
-                familyTree={familyTree}
-                onMemberClick={handleMemberClick}
-                searchTerm={searchTerm}
-                hideFemale={hideFemale}
-              />
+              <FamilyListView familyTree={familyTree} onMemberClick={handleMemberClick} searchTerm={searchTerm} hideFemale={hideFemale} />
             ) : (
               <div className="text-center mt-3">
                 <p className="text-muted">Chưa có thành viên nào.</p>
@@ -466,7 +447,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
                   <Button variant="outline-secondary" onClick={copySearchLink} title="Copy link">
                     <FontAwesomeIcon icon={faLink} />
                   </Button>
-                  <Button variant="outline-secondary" onClick={() => updateSearchUrl('')}>
+                  <Button variant="outline-secondary" onClick={() => updateSearchUrl("")}>
                     ✕
                   </Button>
                 </>
@@ -478,29 +459,15 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
                 <FontAwesomeIcon icon={faExpand} /> Mở rộng
               </Button>
 
-              <Button
-                variant="outline-success"
-                size="sm"
-                onClick={handleExportImage}
-                disabled={exporting}
-              >
-                <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
+              <Button variant="outline-success" size="sm" onClick={handleExportImage} disabled={exporting}>
+                <FontAwesomeIcon icon={faCamera} /> {exporting ? "Đang xuất..." : "Xuất ảnh"}
               </Button>
 
-              <Button
-                variant={hideFemale ? 'warning' : 'outline-warning'}
-                size="sm"
-                onClick={() => setHideFemale(!hideFemale)}
-              >
-                👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+              <Button variant={hideFemale ? "warning" : "outline-warning"} size="sm" onClick={() => setHideFemale(!hideFemale)}>
+                👩 {hideFemale ? "Hiện nữ" : "Ẩn nữ"}
               </Button>
 
-              <Button
-                variant="warning"
-                size="sm"
-                onClick={() => setShowSuggestionModal(true)}
-                className="btn-suggest-pulse"
-              >
+              <Button variant="warning" size="sm" onClick={() => setShowSuggestionModal(true)} className="btn-suggest-pulse">
                 <FontAwesomeIcon icon={faLightbulb} /> Đề xuất
               </Button>
             </div>
@@ -509,12 +476,24 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
           {/* Desktop Stats */}
           {allMembers.length > 0 && (
             <div className="tree-stats">
-              <span>📊 <strong>{stats.totalGenerations}</strong> đời</span>
-              <span>👥 <strong>{stats.total}</strong> thành viên</span>
-              <span>👨 <strong>{stats.male}</strong> nam</span>
-              <span>👩 <strong>{stats.female}</strong> nữ</span>
-              <span>💚 <strong>{stats.alive}</strong> còn sống</span>
-              <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
+              <span>
+                📊 <strong>{stats.totalGenerations}</strong> đời
+              </span>
+              <span>
+                👥 <strong>{stats.total}</strong> thành viên
+              </span>
+              <span>
+                👨 <strong>{stats.male}</strong> nam
+              </span>
+              <span>
+                👩 <strong>{stats.female}</strong> nữ
+              </span>
+              <span>
+                💚 <strong>{stats.alive}</strong> còn sống
+              </span>
+              <span>
+                🕯️ <strong>{stats.deceased}</strong> đã mất
+              </span>
             </div>
           )}
 
@@ -541,7 +520,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
 
       <footer className="share-footer">
         <div className="share-section d-flex justify-content-between">
-          {isMobile ?
+          {isMobile ? (
             <>
               <div id="copyright">
                 <small>© {new Date().getFullYear()} ToTienTa.com All rights reserved.</small>
@@ -551,7 +530,8 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
                   <FontAwesomeIcon icon={faPhoneAlt} />
                 </Link>
               </div>
-            </> :
+            </>
+          ) : (
             <>
               <div id="copyright">
                 © {new Date().getFullYear()} <b>ToTienTa.com</b>. All rights reserved.
@@ -561,7 +541,8 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
                   <FontAwesomeIcon icon={faPhoneAlt} /> Hỗ trợ: 0327.691.726
                 </Link>
               </div>
-            </>}
+            </>
+          )}
         </div>
       </footer>
 
@@ -582,17 +563,20 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
       />
 
       {/* Suggestion Prompt Modal */}
-      <Modal show={showSuggestionPrompt} onHide={() => {
-        sessionStorage.setItem(`suggest_later_${viewCode}`, '1');
-        setShowSuggestionPrompt(false);
-      }} centered size="sm">
+      <Modal
+        show={showSuggestionPrompt}
+        onHide={() => {
+          sessionStorage.setItem(`suggest_later_${viewCode}`, "1");
+          setShowSuggestionPrompt(false);
+        }}
+        centered
+        size="xl"
+      >
         <Modal.Header closeButton>
-          <Modal.Title style={{ fontSize: '1rem' }}>👨‍👩‍👧‍👦 Bạn có trong gia phả này?</Modal.Title>
+          <Modal.Title style={{ fontSize: "1rem" }}>👨‍👩‍👧‍👦 Bạn có trong gia phả này?</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
-          <p className="text-muted small mb-3">
-            Nếu bạn là thành viên của gia đình này, hãy đề xuất để được thêm vào gia phả!
-          </p>
+          <p className="text-muted small mb-3">Nếu bạn là thành viên của gia đình này, hãy đề xuất để được thêm vào gia phả!</p>
           <div className="d-grid gap-2">
             <Button
               variant="warning"
@@ -607,7 +591,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
               variant="outline-secondary"
               size="sm"
               onClick={() => {
-                sessionStorage.setItem(`suggest_later_${viewCode}`, '1');
+                sessionStorage.setItem(`suggest_later_${viewCode}`, "1");
                 setShowSuggestionPrompt(false);
               }}
             >
@@ -618,7 +602,7 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
               size="sm"
               className="text-muted"
               onClick={() => {
-                localStorage.setItem(`suggest_never_${viewCode}`, '1');
+                localStorage.setItem(`suggest_never_${viewCode}`, "1");
                 setShowSuggestionPrompt(false);
               }}
             >
