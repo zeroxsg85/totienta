@@ -242,11 +242,11 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="container py-4">
-      <h4 className="mb-1">🔗 Kết nối dòng họ</h4>
+    <div className="container mt-5 pt-4">
+      <h2 className="mb-4">🔗 Kết nối dòng họ</h2>
       <p className="text-muted mb-4">
-        Hệ thống tự động phát hiện thành viên trùng giữa các cây gia phả khác nhau.
-        Khi cả hai quản lý xác nhận, hai cây sẽ được kết nối tại node chung đó.
+        Hệ thống tự động phát hiện thành viên trùng giữa các cây gia phả khác nhau. Khi cả hai quản lý xác nhận, hai cây sẽ được kết nối tại
+        node chung đó.
       </p>
 
       {/* Cây đã kết nối */}
@@ -260,13 +260,15 @@ export default function MatchesPage() {
       )}
 
       {/* Danh sách matches */}
-      <Tab.Container activeKey={tab} onSelect={(k) => setTab(k || 'pending')}>
+      <Tab.Container activeKey={tab} onSelect={(k) => setTab(k || "pending")}>
         <Nav variant="tabs" className="mb-3">
           <Nav.Item>
             <Nav.Link eventKey="pending">
               Chờ xác nhận
               {pendingMatches.length > 0 && (
-                <Badge bg="warning" text="dark" className="ms-1">{pendingMatches.length}</Badge>
+                <Badge bg="warning" text="dark" className="ms-1">
+                  {pendingMatches.length}
+                </Badge>
               )}
             </Nav.Link>
           </Nav.Item>
@@ -274,7 +276,9 @@ export default function MatchesPage() {
             <Nav.Link eventKey="confirmed">
               Đã xác nhận
               {confirmedMatches.length > 0 && (
-                <Badge bg="success" className="ms-1">{confirmedMatches.length}</Badge>
+                <Badge bg="success" className="ms-1">
+                  {confirmedMatches.length}
+                </Badge>
               )}
             </Nav.Link>
           </Nav.Item>
@@ -282,7 +286,9 @@ export default function MatchesPage() {
             <Nav.Link eventKey="denied">
               Đã từ chối
               {deniedMatches.length > 0 && (
-                <Badge bg="secondary" className="ms-1">{deniedMatches.length}</Badge>
+                <Badge bg="secondary" className="ms-1">
+                  {deniedMatches.length}
+                </Badge>
               )}
             </Nav.Link>
           </Nav.Item>
@@ -294,8 +300,7 @@ export default function MatchesPage() {
               <p className="text-muted text-center py-4">Không có kết nối nào đang chờ xác nhận.</p>
             ) : (
               pendingMatches.map((m) => (
-                <MatchCard key={m._id} match={m} loading={actionLoading}
-                  onConfirm={handleConfirm} onDeny={handleDeny} />
+                <MatchCard key={m._id} match={m} loading={actionLoading} onConfirm={handleConfirm} onDeny={handleDeny} />
               ))
             )}
           </Tab.Pane>
@@ -304,8 +309,7 @@ export default function MatchesPage() {
               <p className="text-muted text-center py-4">Chưa có kết nối nào được xác nhận.</p>
             ) : (
               confirmedMatches.map((m) => (
-                <MatchCard key={m._id} match={m} loading={actionLoading}
-                  onConfirm={handleConfirm} onDeny={handleDeny} />
+                <MatchCard key={m._id} match={m} loading={actionLoading} onConfirm={handleConfirm} onDeny={handleDeny} />
               ))
             )}
           </Tab.Pane>
@@ -314,8 +318,7 @@ export default function MatchesPage() {
               <p className="text-muted text-center py-4">Chưa có kết nối nào bị từ chối.</p>
             ) : (
               deniedMatches.map((m) => (
-                <MatchCard key={m._id} match={m} loading={actionLoading}
-                  onConfirm={handleConfirm} onDeny={handleDeny} />
+                <MatchCard key={m._id} match={m} loading={actionLoading} onConfirm={handleConfirm} onDeny={handleDeny} />
               ))
             )}
           </Tab.Pane>
