@@ -63,12 +63,33 @@ const registerUser = async (req, res) => {
 // Đăng nhập
 // =======================
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, twoFactorToken } = req.body;
 
     try {
         const user = await User.findOne({ email });
         if (!user || !(await user.matchPassword(password))) {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+        }
+
+        // Nếu user đã bật 2FA
+        if (user.twoFactor?.enabled) {
+            // Chưa gửi mã OTP → báo client phải nhập thêm bước 2FA
+            if (!twoFactorToken) {
+                return res.status(200).json({ requiresTwoFactor: true });
+            }
+
+            // Có mã OTP → verify
+            const speakeasy = require('speakeasy');
+            const isValid = speakeasy.totp.verify({
+                secret:   user.twoFactor.secret,
+                encoding: 'base32',
+                token:    twoFactorToken.toString().replace(/\s/g, ''),
+                window:   1,
+            });
+
+            if (!isValid) {
+                return res.status(401).json({ message: 'Mã xác thực không đúng. Thử lại.' });
+            }
         }
 
         res.status(200).json({

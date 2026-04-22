@@ -23,6 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import API from '@/lib/api';
 import { UserProfile, Member } from '@/types';
 import Loading from '@/components/Loading';
+import TwoFactorSetup from '@/components/TwoFactorSetup';
 
 export default function ProfilePage(): JSX.Element | null {
     const { isAuthenticated, isLoading } = useAuth();
@@ -255,11 +256,20 @@ export default function ProfilePage(): JSX.Element | null {
                         <Card.Body>
                             <Button
                                 variant="outline-secondary"
+                                className="mb-4"
                                 onClick={() => router.push('/change-password')}
                             >
                                 <FontAwesomeIcon icon={faKey} className="me-2" />
                                 Đổi mật khẩu
                             </Button>
+
+                            <hr />
+                            <p className="fw-semibold mb-2">🔐 Xác thực 2 bước (2FA)</p>
+                            <p className="text-muted small mb-3">
+                                Bảo vệ tài khoản bằng mã OTP từ ứng dụng Authenticator.
+                                Mỗi lần đăng nhập sẽ cần nhập thêm mã 6 chữ số.
+                            </p>
+                            <TwoFactorSetup />
                         </Card.Body>
                     </Card>
                 </Col>

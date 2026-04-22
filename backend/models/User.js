@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema({
     planExpiry: { type: Date, default: null },
     treeName: { type: String, default: '' },
 
+    // Xác thực 2 bước (TOTP)
+    twoFactor: {
+        enabled: { type: Boolean, default: false },
+        secret:  { type: String, default: null }, // TOTP secret, chỉ lưu khi enabled
+    },
+
     // Quỹ dòng họ
     fund: {
         isEnabled: { type: Boolean, default: false },
