@@ -54,17 +54,12 @@ export default function LoginPage(): JSX.Element {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <h3 className="text-center mb-4"><FontAwesomeIcon icon={faUserShield} /> Đăng nhập</h3>
+        <h3 className="text-center mb-4">
+          <FontAwesomeIcon icon={faUserShield} /> Đăng nhập
+        </h3>
 
         <form onSubmit={handleSubmit}>
-          <InputWithIcon
-            icon={faEnvelope}
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-          />
+          <InputWithIcon icon={faEnvelope} type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
 
           <InputWithIcon
             icon={faLock}
@@ -75,25 +70,20 @@ export default function LoginPage(): JSX.Element {
             onChange={handleChange}
           />
 
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </form>
         <hr />
         <div className="d-flex justify-content-between mt-3">
-          <a href="/forgot-password" className="text-decoration-none">
+          <a href="https://app.totienta.com/forgot-password" className="text-decoration-none">
             Quên mật khẩu?
           </a>
 
-          <a href="/register" className="text-decoration-none">
+          <a href="https://app.totienta.com/register" className="text-decoration-none">
             Đăng ký
           </a>
         </div>
-
       </div>
     </div>
   );

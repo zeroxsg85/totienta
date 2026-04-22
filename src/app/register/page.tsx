@@ -71,22 +71,8 @@ export default function RegisterPage(): JSX.Element {
         </h3>
 
         <form onSubmit={handleSubmit}>
-          <InputWithIcon
-            icon={faUser}
-            placeholder="Họ tên"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            disabled={loading}
-          />
-          <InputWithIcon
-            icon={faEnvelope}
-            placeholder="Email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            disabled={loading}
-          />
+          <InputWithIcon icon={faUser} placeholder="Họ tên" name="name" value={form.name} onChange={handleChange} disabled={loading} />
+          <InputWithIcon icon={faEnvelope} placeholder="Email" name="email" value={form.email} onChange={handleChange} disabled={loading} />
 
           <InputWithIcon
             type="password"
@@ -108,21 +94,14 @@ export default function RegisterPage(): JSX.Element {
             disabled={loading}
           />
 
-          <button
-            type="submit"
-            className="btn btn-success w-100"
-            disabled={loading}
-          >
+          <button type="submit" className="btn btn-success w-100" disabled={loading}>
             {loading ? (
               <>
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                />
+                <span className="spinner-border spinner-border-sm me-2" role="status" />
                 Đang đăng ký...
               </>
             ) : (
-              'Đăng ký'
+              "Đăng ký"
             )}
           </button>
         </form>
@@ -130,7 +109,7 @@ export default function RegisterPage(): JSX.Element {
         <hr />
 
         <div className="d-flex justify-content-center mt-3">
-          <a href="/login" className="text-decoration-none">
+          <a href="https://app.totienta.com/login" className="text-decoration-none">
             Quay lại Đăng nhập
           </a>
         </div>

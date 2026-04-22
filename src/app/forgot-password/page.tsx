@@ -32,47 +32,42 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="auth-wrapper">
-            <div className="auth-card">
-                <h4 className="text-center mb-4"><FontAwesomeIcon icon={faUserLock} /> Quên mật khẩu</h4>
+      <div className="auth-wrapper">
+        <div className="auth-card">
+          <h4 className="text-center mb-4">
+            <FontAwesomeIcon icon={faUserLock} /> Quên mật khẩu
+          </h4>
 
-                <InputWithIcon
-                    icon={faEnvelope}
-                    placeholder="Email"
-                    name="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    disabled={loading}
-                />
+          <InputWithIcon
+            icon={faEnvelope}
+            placeholder="Email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+          />
 
-                <button
-                    className="btn btn-primary w-100"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <span
-                                className="spinner-border spinner-border-sm me-2"
-                                role="status"
-                            />
-                            Đang gửi...
-                        </>
-                    ) : (
-                        'Gửi email'
-                    )}
-                </button>
-                <hr />
-                <div className="d-flex justify-content-between mt-3">
-                    <a href="/register" className="text-decoration-none">
-                        Đăng ký
-                    </a>
+          <button className="btn btn-primary w-100" onClick={handleSubmit} disabled={loading}>
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" />
+                Đang gửi...
+              </>
+            ) : (
+              "Gửi email"
+            )}
+          </button>
+          <hr />
+          <div className="d-flex justify-content-between mt-3">
+            <a href="https://app.totienta.com/register" className="text-decoration-none">
+              Đăng ký
+            </a>
 
-                    <a href="/login" className="text-decoration-none">
-                        Đăng nhập
-                    </a>
-                </div>
-            </div>
+            <a href="https://app.totienta.com/login" className="text-decoration-none">
+              Đăng nhập
+            </a>
+          </div>
         </div>
+      </div>
     );
 }
