@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Button, Card, Modal, Form, Row, Col, Tab, Nav,
   Badge, Spinner, Table, ProgressBar,
@@ -8,6 +8,89 @@ import {
 import { toast } from 'react-toastify';
 import API from '@/lib/api';
 import { ClanFund, FundTransaction, Member } from '@/types';
+
+// ── MemberSearchSelect ─────────────────────────────────────────────────────────
+interface MemberSearchSelectProps {
+  members: Pick<Member, '_id' | 'name'>[];
+  value: string;
+  onChange: (id: string) => void;
+}
+function MemberSearchSelect({ members, value, onChange }: MemberSearchSelectProps) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Hiển thị tên thành viên đang chọn
+  const selectedName = members.find(m => m._id === value)?.name ?? '';
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = query.trim()
+    ? members.filter(m => m.name.toLowerCase().includes(query.toLowerCase()))
+    : members;
+
+  const handleSelect = (id: string, name: string) => {
+    onChange(id);
+    setQuery(name);
+    setOpen(false);
+  };
+
+  const handleClear = () => { onChange(''); setQuery(''); };
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div className="input-group">
+        <Form.Control
+          placeholder="Tìm thành viên..."
+          value={open ? query : (selectedName || query)}
+          onChange={e => { setQuery(e.target.value); setOpen(true); if (!e.target.value) onChange(''); }}
+          onFocus={() => { setOpen(true); setQuery(''); }}
+        />
+        {value && (
+          <Button variant="outline-secondary" onClick={handleClear} tabIndex={-1}>✕</Button>
+        )}
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute', zIndex: 1050, width: '100%',
+          background: '#fff', border: '1px solid #dee2e6',
+          borderRadius: 4, boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+          maxHeight: 220, overflowY: 'auto',
+        }}>
+          <div
+            className="px-3 py-2 text-muted small"
+            style={{ cursor: 'pointer', borderBottom: '1px solid #eee' }}
+            onMouseDown={() => handleSelect('', '')}
+          >
+            — Không chọn —
+          </div>
+          {filtered.length === 0 && (
+            <div className="px-3 py-2 text-muted small">Không tìm thấy</div>
+          )}
+          {filtered.map(m => (
+            <div key={m._id}
+              className={`px-3 py-2 ${m._id === value ? 'bg-primary text-white' : ''}`}
+              style={{ cursor: 'pointer' }}
+              onMouseDown={() => handleSelect(m._id, m.name)}
+              onMouseEnter={e => { if (m._id !== value) (e.target as HTMLElement).style.background = '#f0f4ff'; }}
+              onMouseLeave={e => { if (m._id !== value) (e.target as HTMLElement).style.background = ''; }}
+            >
+              {m.name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n: number, currency = 'VND') =>
@@ -234,13 +317,11 @@ function TransactionFormModal({ show, onHide, fundId, currency, defaultType = 'i
               <>
                 <Col xs={12} md={6}>
                   <Form.Label>Thành viên đóng góp</Form.Label>
-                  <Form.Select value={form.member}
-                    onChange={e => setForm({ ...form, member: e.target.value })}>
-                    <option value="">-- Chọn thành viên --</option>
-                    {members.map(m => (
-                      <option key={m._id} value={m._id}>{m.name}</option>
-                    ))}
-                  </Form.Select>
+                  <MemberSearchSelect
+                    members={members}
+                    value={form.member}
+                    onChange={id => setForm({ ...form, member: id })}
+                  />
                 </Col>
                 <Col xs={12} md={6}>
                   <Form.Label>Tên ghi nhận (nếu khác)</Form.Label>

@@ -32,7 +32,15 @@ const EMPTY_EVENT: Omit<ClanEvent, '_id'> = {
 /** Banner một lần: bật shrine hàng loạt cho thành viên đã mất */
 function ShrineMigrationBanner() {
   const [migrating, setMigrating] = useState(false);
-  const [done, setDone] = useState(false);
+  const [needsMigration, setNeedsMigration] = useState<boolean | null>(null); // null = đang check
+
+  // Check xem còn thành viên đã mất chưa bật shrine không
+  useEffect(() => {
+    API.get<any[]>('/members/').then(({ data }) => {
+      const hasUnshined = data.some(m => m.isAlive === false && !m.shrine?.isEnabled);
+      setNeedsMigration(hasUnshined);
+    }).catch(() => setNeedsMigration(false));
+  }, []);
 
   const handleMigrate = async () => {
     if (!confirm('Tự động bật bàn thờ số cho tất cả thành viên đã mất chưa có bàn thờ?')) return;
@@ -40,7 +48,7 @@ function ShrineMigrationBanner() {
     try {
       const res = await API.post<{ message: string; modifiedCount: number }>('/clan/migrate-shrine');
       toast.success(res.data.message);
-      setDone(true);
+      setNeedsMigration(false);
     } catch {
       toast.error('Không thể chạy migration');
     } finally {
@@ -48,7 +56,7 @@ function ShrineMigrationBanner() {
     }
   };
 
-  if (done) return null;
+  if (needsMigration === null || needsMigration === false) return null;
 
   return (
     <Card className="mb-4 border-warning">
