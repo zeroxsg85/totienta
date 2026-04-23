@@ -390,22 +390,22 @@ export default function MembersPage(): JSX.Element | null {
   }
 
   return (
-    <div
-      className="container-fluid p-0"
-      onContextMenu={(e) => e.preventDefault()}
-    >
+    <div className="container-fluid p-0" onContextMenu={(e) => e.preventDefault()}>
       {/* ===== BANNER XÁC THỰC EMAIL ===== */}
       {!isVerified && (
-        <div className="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0 rounded-0 px-3 py-2" style={{ borderBottom: '2px solid #ffc107' }}>
+        <div
+          className="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0 rounded-0 px-3 py-2"
+          style={{ borderBottom: "2px solid #ffc107" }}
+        >
           <span>
-            ⚠️ <strong>Tài khoản chưa được kích hoạt.</strong> Kiểm tra email để xác thực, hoặc{' '}
+            ⚠️ <strong>Tài khoản chưa được kích hoạt.</strong> Kiểm tra email để xác thực, hoặc{" "}
             <button
               className="btn btn-link p-0 align-baseline fw-semibold"
-              style={{ color: '#856404' }}
+              style={{ color: "#856404" }}
               onClick={handleResendVerification}
               disabled={resendingEmail}
             >
-              {resendingEmail ? 'Đang gửi...' : 'gửi lại email kích hoạt'}
+              {resendingEmail ? "Đang gửi..." : "gửi lại email kích hoạt"}
             </button>
             .
           </span>
@@ -417,14 +417,11 @@ export default function MembersPage(): JSX.Element | null {
         <>
           {/* Hidden FamilyTree for export */}
           {familyTree && familyTree.length > 0 && (
-            <div
-              className="list-tree"
-              style={{ position: 'absolute', left: '-9999px', top: 0 }}
-            >
+            <div className="list-tree" style={{ position: "absolute", left: "-9999px", top: 0 }}>
               <FamilyTree
                 ref={treeRef}
                 familyTree={familyTree}
-                onMemberClick={() => { }}
+                onMemberClick={() => {}}
                 isEditable={false}
                 searchTerm={searchTerm}
                 hideFemale={hideFemale}
@@ -434,21 +431,15 @@ export default function MembersPage(): JSX.Element | null {
 
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
-            <Button
-              variant="outline-success"
-              size="sm"
-              onClick={handleExportImage}
-              disabled={exporting}
-              title="Xuất ảnh"
-            >
+            <Button variant="outline-success" size="sm" onClick={handleExportImage} disabled={exporting} title="Xuất ảnh">
               <FontAwesomeIcon icon={faCamera} />
             </Button>
 
             <Button
-              variant={hideFemale ? 'warning' : 'outline-warning'}
+              variant={hideFemale ? "warning" : "outline-warning"}
               size="sm"
               onClick={() => setHideFemale(!hideFemale)}
-              title={hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+              title={hideFemale ? "Hiện nữ" : "Ẩn nữ"}
             >
               👩
             </Button>
@@ -497,7 +488,7 @@ export default function MembersPage(): JSX.Element | null {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
-                <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
+                <Button variant="outline-secondary" onClick={() => setSearchTerm("")}>
                   ✕
                 </Button>
               )}
@@ -520,7 +511,7 @@ export default function MembersPage(): JSX.Element | null {
                 <p className="text-muted">Chưa có thành viên nào.</p>
                 <Button
                   disabled={!isVerified}
-                  title={!isVerified ? 'Kích hoạt tài khoản qua email trước' : undefined}
+                  title={!isVerified ? "Kích hoạt tài khoản qua email trước" : undefined}
                   onClick={() => {
                     if (isEmptyTree) {
                       setSelectedParentId(null);
@@ -531,7 +522,8 @@ export default function MembersPage(): JSX.Element | null {
                 >
                   Thêm thành viên
                 </Button>
-
+                <br />
+                {!isVerified ? "Hãy kích hoạt tài khoản qua email trước" : undefined}
               </div>
             )}
           </div>
@@ -553,39 +545,28 @@ export default function MembersPage(): JSX.Element | null {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
-                <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
+                <Button variant="outline-secondary" onClick={() => setSearchTerm("")}>
                   ✕
                 </Button>
               )}
             </InputGroup>
 
             <div className="toolbar-buttons">
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={handleExpandAll}
-                title="Mở rộng tất cả"
-              >
+              <Button variant="outline-primary" size="sm" onClick={handleExpandAll} title="Mở rộng tất cả">
                 <FontAwesomeIcon icon={faExpand} /> Mở rộng
               </Button>
 
-              <Button
-                variant="outline-success"
-                size="sm"
-                onClick={handleExportImage}
-                disabled={exporting}
-                title="Xuất ảnh"
-              >
-                <FontAwesomeIcon icon={faCamera} /> {exporting ? 'Đang xuất...' : 'Xuất ảnh'}
+              <Button variant="outline-success" size="sm" onClick={handleExportImage} disabled={exporting} title="Xuất ảnh">
+                <FontAwesomeIcon icon={faCamera} /> {exporting ? "Đang xuất..." : "Xuất ảnh"}
               </Button>
 
               <Button
-                variant={hideFemale ? 'warning' : 'outline-warning'}
+                variant={hideFemale ? "warning" : "outline-warning"}
                 size="sm"
                 onClick={() => setHideFemale(!hideFemale)}
-                title={hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+                title={hideFemale ? "Hiện nữ" : "Ẩn nữ"}
               >
-                👩 {hideFemale ? 'Hiện nữ' : 'Ẩn nữ'}
+                👩 {hideFemale ? "Hiện nữ" : "Ẩn nữ"}
               </Button>
             </div>
           </div>
@@ -593,12 +574,24 @@ export default function MembersPage(): JSX.Element | null {
           {/* Desktop Stats */}
           {allMembers.length > 0 && (
             <div className="tree-stats">
-              <span>📊 <strong>{stats.totalGenerations}</strong> đời</span>
-              <span>👥 <strong>{stats.total}</strong> thành viên</span>
-              <span>👨 <strong>{stats.male}</strong> nam</span>
-              <span>👩 <strong>{stats.female}</strong> nữ</span>
-              <span>💚 <strong>{stats.alive}</strong> còn sống</span>
-              <span>🕯️ <strong>{stats.deceased}</strong> đã mất</span>
+              <span>
+                📊 <strong>{stats.totalGenerations}</strong> đời
+              </span>
+              <span>
+                👥 <strong>{stats.total}</strong> thành viên
+              </span>
+              <span>
+                👨 <strong>{stats.male}</strong> nam
+              </span>
+              <span>
+                👩 <strong>{stats.female}</strong> nữ
+              </span>
+              <span>
+                💚 <strong>{stats.alive}</strong> còn sống
+              </span>
+              <span>
+                🕯️ <strong>{stats.deceased}</strong> đã mất
+              </span>
             </div>
           )}
 
@@ -621,7 +614,7 @@ export default function MembersPage(): JSX.Element | null {
                 <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>
                 <Button
                   disabled={!isVerified}
-                  title={!isVerified ? 'Kích hoạt tài khoản qua email trước' : undefined}
+                  title={!isVerified ? "Kích hoạt tài khoản qua email trước" : undefined}
                   onClick={() => {
                     if (isEmptyTree) {
                       setSelectedParentId(null);
@@ -632,7 +625,8 @@ export default function MembersPage(): JSX.Element | null {
                 >
                   Thêm thành viên
                 </Button>
-
+                <br />
+                {!isVerified ? "Hãy kích hoạt tài khoản qua email trước" : undefined}
               </div>
             )}
           </section>
@@ -643,13 +637,21 @@ export default function MembersPage(): JSX.Element | null {
       {isAuthenticated && (
         <footer className="share-footer">
           <div className="share-section d-flex justify-content-between">
-            {viewCode ?
-              <Button variant='outline-secondary' disabled>
+            {viewCode ? (
+              <Button variant="outline-secondary" disabled>
                 <strong>{viewCode}</strong>
               </Button>
-              : ""}
+            ) : (
+              ""
+            )}
             {!viewCode ? (
-              <Button variant="primary" size="sm" onClick={generateViewCode}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={generateViewCode}
+                disabled={!isVerified || allMembers.length === 0}
+                title={!isVerified && !allMembers ? "Kích hoạt tài khoản qua email trước" : undefined}
+              >
                 <FontAwesomeIcon icon={faCloudUploadAlt} /> Tạo URL chia sẻ
               </Button>
             ) : (
@@ -689,7 +691,6 @@ export default function MembersPage(): JSX.Element | null {
         parentId={selectedParentId}
         defaultChildId={defaultChildId} // 👈 THÊM
       />
-
 
       <EditMemberModal
         show={showEditModal}
