@@ -496,6 +496,13 @@ const searchGlobal = async (req, res) => {
 };
 
 // ── Sự kiện sắp tới ──────────────────────────────────────────────────────────
+// Tên lưu dạng "Gia Phả-Khai Sinh-Thường Gọi", chỉ lấy phần Khai Sinh
+function getCivilName(name) {
+    if (!name) return '';
+    const parts = name.split('-').map(p => p.trim());
+    return parts.length >= 2 ? parts[1] : name;
+}
+
 const getUpcomingEvents = async (req, res) => {
     try {
         const User = require('../models/User');
@@ -533,7 +540,7 @@ const getUpcomingEvents = async (req, res) => {
                             type:   'birthday',
                             member: pick,
                             date:   thisYearBd,
-                            label:  `Sinh nhật ${m.name}`,
+                            label:  `Sinh nhật ${getCivilName(m.name)}`,
                         });
                     }
                 }
@@ -550,7 +557,7 @@ const getUpcomingEvents = async (req, res) => {
                             type:       'anniversary',
                             member:     pick,
                             date:       solar,
-                            label:      `Giỗ ${m.name}`,
+                            label:      `Giỗ ${getCivilName(m.name)}`,
                             lunarDay:   ann.day,
                             lunarMonth: ann.month,
                         });
@@ -566,7 +573,7 @@ const getUpcomingEvents = async (req, res) => {
                                 type:   'anniversary',
                                 member: pick,
                                 date:   new Date(todayY, ddMonth - 1, ddDay),
-                                label:  `Giỗ ${m.name}`,
+                                label:  `Giỗ ${getCivilName(m.name)}`,
                             });
                         }
                     }

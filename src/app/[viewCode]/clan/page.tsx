@@ -7,6 +7,8 @@ import {
 } from 'react-bootstrap';
 import Link from 'next/link';
 import API from '@/lib/api';
+import useDeviceType from '@/hooks/useDeviceType';
+import { getCivilName } from '@/lib/nameUtils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ClanEvent {
@@ -158,9 +160,42 @@ function FundDetailModal({ fund, viewCode, onHide }: { fund: ClanFund; viewCode:
 }
 
 function TxTable({ rows, type, currency }: { rows: FundTransaction[]; type: 'income' | 'expense'; currency: string }) {
+  const { isMobile } = useDeviceType();
   if (!rows.length) return <p className="text-muted text-center py-4">Chưa có giao dịch nào.</p>;
+
+  const personName = (tx: FundTransaction) => {
+    const raw = tx.memberName || (tx.member as any)?.name || '';
+    return getCivilName(raw) || raw || '—';
+  };
+
+  if (isMobile) {
+    return (
+      <div className="d-flex flex-column gap-2">
+        {rows.map(tx => (
+          <Card key={tx._id} className="border-0 bg-light">
+            <Card.Body className="py-2 px-3">
+              <div className="d-flex justify-content-between align-items-start">
+                <div className="fw-semibold" style={{ fontSize: '0.95rem' }}>
+                  {type === 'income' ? personName(tx) : (tx.recipient || '—')}
+                </div>
+                <span className={`fw-bold ${type === 'income' ? 'text-success' : 'text-danger'}`} style={{ whiteSpace: 'nowrap' }}>
+                  {type === 'income' ? '+' : '-'}{fmt(tx.amount, currency)}
+                </span>
+              </div>
+              <div className="text-muted" style={{ fontSize: '0.78rem' }}>
+                {fmtDate(tx.date)}
+                {tx.transactionCode && <> · <code>{tx.transactionCode}</code></>}
+                {tx.note && <> · {tx.note}</>}
+              </div>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <Table responsive hover size="sm">
+    <Table hover size="sm">
       <thead className="table-light">
         <tr>
           <th>Ngày</th>
@@ -176,7 +211,7 @@ function TxTable({ rows, type, currency }: { rows: FundTransaction[]; type: 'inc
           <tr key={tx._id}>
             <td style={{ whiteSpace: 'nowrap' }}>{fmtDate(tx.date)}</td>
             <td>{tx.transactionCode ? <code className="small">{tx.transactionCode}</code> : '—'}</td>
-            {type === 'income'  && <td>{tx.memberName || (tx.member as any)?.name || '—'}</td>}
+            {type === 'income'  && <td>{personName(tx)}</td>}
             {type === 'expense' && <td>{tx.recipient || '—'}</td>}
             <td className={`text-end fw-semibold ${type === 'income' ? 'text-success' : 'text-danger'}`}>
               {type === 'income' ? '+' : '-'}{fmt(tx.amount, currency)}

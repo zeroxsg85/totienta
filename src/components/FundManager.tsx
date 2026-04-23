@@ -8,6 +8,8 @@ import {
 import { toast } from 'react-toastify';
 import API from '@/lib/api';
 import { ClanFund, FundTransaction, Member } from '@/types';
+import useDeviceType from '@/hooks/useDeviceType';
+import { getCivilName } from '@/lib/nameUtils';
 
 // ── MemberSearchSelect ─────────────────────────────────────────────────────────
 interface MemberSearchSelectProps {
@@ -374,11 +376,51 @@ interface TxTableProps {
   onDelete: (tx: FundTransaction) => void;
 }
 function TransactionTable({ transactions, type, currency, onEdit, onDelete }: TxTableProps) {
+  const { isMobile } = useDeviceType();
   const rows = transactions.filter(t => t.type === type);
   if (!rows.length) return <p className="text-muted text-center py-4">Chưa có giao dịch nào.</p>;
 
+  const personName = (tx: FundTransaction) => {
+    const raw = tx.memberName || (tx.member as any)?.name || '';
+    return getCivilName(raw) || raw || '—';
+  };
+
+  // ── Mobile: card list ──────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div className="d-flex flex-column gap-2">
+        {rows.map(tx => (
+          <Card key={tx._id} className="border-0 bg-light">
+            <Card.Body className="py-2 px-3">
+              <div className="d-flex justify-content-between align-items-start">
+                <div className="fw-semibold" style={{ fontSize: '0.95rem' }}>
+                  {type === 'income' ? personName(tx) : (tx.recipient || '—')}
+                </div>
+                <span className={`fw-bold ${type === 'income' ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                  {type === 'income' ? '+' : '-'}{fmt(tx.amount, currency)}
+                </span>
+              </div>
+              <div className="text-muted" style={{ fontSize: '0.78rem' }}>
+                {fmtDate(tx.date)}
+                {tx.transactionCode && <> · <code>{tx.transactionCode}</code></>}
+                {tx.note && <> · {tx.note}</>}
+              </div>
+              <div className="d-flex gap-1 mt-1">
+                <Button size="sm" variant="outline-secondary" className="py-0 px-2" style={{ fontSize: '0.75rem' }}
+                  onClick={() => onEdit(tx)}>✏️ Sửa</Button>
+                <Button size="sm" variant="outline-danger" className="py-0 px-2" style={{ fontSize: '0.75rem' }}
+                  onClick={() => onDelete(tx)}>🗑️</Button>
+              </div>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  // ── Desktop: table ─────────────────────────────────────────────────────────
   return (
-    <Table responsive hover size="sm" className="mb-0">
+    <Table hover size="sm" className="mb-0">
       <thead className="table-light">
         <tr>
           <th>Ngày</th>
@@ -399,14 +441,8 @@ function TransactionTable({ transactions, type, currency, onEdit, onDelete }: Tx
                 ? <code className="small">{tx.transactionCode}</code>
                 : <span className="text-muted">—</span>}
             </td>
-            {type === 'income' && (
-              <td>
-                {tx.memberName || (tx.member as any)?.name || <span className="text-muted">—</span>}
-              </td>
-            )}
-            {type === 'expense' && (
-              <td>{tx.recipient || <span className="text-muted">—</span>}</td>
-            )}
+            {type === 'income' && <td>{personName(tx)}</td>}
+            {type === 'expense' && <td>{tx.recipient || <span className="text-muted">—</span>}</td>}
             <td className={`text-end fw-semibold ${type === 'income' ? 'text-success' : 'text-danger'}`}>
               {type === 'income' ? '+' : '-'}{fmt(tx.amount, currency)}
             </td>

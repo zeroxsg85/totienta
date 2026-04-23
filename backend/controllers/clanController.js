@@ -303,6 +303,7 @@ const getClanPublic = async (req, res) => {
         const Member   = require('../models/Member');
         const ClanFund = require('../models/ClanFund');
         const { lunarDayMonthToSolarInYear } = require('../utils/lunarCalendar');
+        const getCivilName = (name) => { if (!name) return ''; const p = name.split('-').map(s => s.trim()); return p.length >= 2 ? p[1] : name; };
 
         // Tìm userId qua viewCode trên Member
         const anchor = await Member.findOne({ viewCode }).select('createdBy').lean();
@@ -330,7 +331,7 @@ const getClanPublic = async (req, res) => {
                 if (!isNaN(bd.getTime())) {
                     memberEvents.push({
                         type:   'birthday',
-                        label:  `Sinh nhật ${m.name}`,
+                        label:  `Sinh nhật ${getCivilName(m.name)}`,
                         date:   new Date(todayY, bd.getMonth(), bd.getDate()).toISOString().slice(0, 10),
                         member: { _id: m._id, name: m.name, viewCode: m.viewCode },
                     });
@@ -343,7 +344,7 @@ const getClanPublic = async (req, res) => {
                 if (ann?.day && ann?.month) {
                     const solar = lunarDayMonthToSolarInYear(ann.day, ann.month, todayY);
                     if (solar) memberEvents.push({
-                        type: 'anniversary', label: `Giỗ ${m.name}`,
+                        type: 'anniversary', label: `Giỗ ${getCivilName(m.name)}`,
                         date: solar.toISOString().slice(0, 10),
                         member: { _id: m._id, name: m.name, viewCode: m.viewCode },
                         lunarDay: ann.day, lunarMonth: ann.month,
@@ -351,7 +352,7 @@ const getClanPublic = async (req, res) => {
                 } else if (m.deathDate?.solar) {
                     const dd = new Date(m.deathDate.solar);
                     if (!isNaN(dd.getTime())) memberEvents.push({
-                        type: 'anniversary', label: `Giỗ ${m.name}`,
+                        type: 'anniversary', label: `Giỗ ${getCivilName(m.name)}`,
                         date: new Date(todayY, dd.getMonth(), dd.getDate()).toISOString().slice(0, 10),
                         member: { _id: m._id, name: m.name, viewCode: m.viewCode },
                     });
@@ -359,7 +360,7 @@ const getClanPublic = async (req, res) => {
                     const dl = m.deathDate.lunar;
                     const solar = lunarDayMonthToSolarInYear(dl.day, dl.month, todayY);
                     if (solar) memberEvents.push({
-                        type: 'anniversary', label: `Giỗ ${m.name}`,
+                        type: 'anniversary', label: `Giỗ ${getCivilName(m.name)}`,
                         date: solar.toISOString().slice(0, 10),
                         member: { _id: m._id, name: m.name, viewCode: m.viewCode },
                         lunarDay: dl.day, lunarMonth: dl.month,

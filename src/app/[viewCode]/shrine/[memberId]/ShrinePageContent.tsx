@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import Link from 'next/link';
 import { PRESET_OFFERINGS } from '@/components/ShrineModal';
 import { Member, ShrineOfferingStat } from '@/types';
+import { getCivilName, getFamilyTreeName } from '@/lib/nameUtils';
 
 const INCENSE_COOLDOWN_MS  = 60 * 60 * 1000;
 const OFFERING_COOLDOWN_MS = 60 * 60 * 1000;
@@ -265,8 +266,11 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
                 style={{ width: 110, height: 110, borderRadius: "50%", border: `3px solid ${theme.border}`, objectFit: "cover" }}
               />
               <h4 className="mt-3 mb-0" style={{ color: theme.border }}>
-                {member.name}
+                {getCivilName(member.name)}
               </h4>
+              {getFamilyTreeName(member.name) !== getCivilName(member.name) && (
+                <div className="text-muted" style={{ fontSize: '0.85rem' }}>({getFamilyTreeName(member.name)})</div>
+              )}
               {member.deathDate?.solar && (
                 <small className="text-muted">{new Date(member.deathDate.solar).toLocaleDateString("vi-VN")}</small>
               )}
