@@ -165,7 +165,28 @@ const deleteTransaction = async (req, res) => {
     }
 };
 
+// GET /clan/public/:viewCode/funds/:id/transactions  (public)
+const getTransactionsPublic = async (req, res) => {
+    try {
+        const fund = await ClanFund.findById(req.params.id).lean();
+        if (!fund) return res.status(404).json({ message: 'Không tìm thấy quỹ' });
+
+        const filter = { fund: fund._id };
+        if (req.query.type) filter.type = req.query.type;
+
+        const transactions = await FundTransaction
+            .find(filter)
+            .populate('member', 'name')
+            .sort({ date: -1 });
+
+        res.json(transactions);
+    } catch (e) {
+        res.status(500).json({ message: 'Lỗi khi lấy giao dịch', error: e });
+    }
+};
+
 module.exports = {
     getFunds, createFund, updateFund, deleteFund,
     getTransactions, addTransaction, updateTransaction, deleteTransaction,
+    getTransactionsPublic,
 };

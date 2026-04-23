@@ -12,11 +12,17 @@ const {
     migrateShrine,
     getVisibilitySettings,
     updateVisibilitySettings,
+    getClanPublic,
 } = require('../controllers/clanController');
 const {
     getFunds, createFund, updateFund: updateClanFund, deleteFund,
     getTransactions, addTransaction, updateTransaction, deleteTransaction,
+    getTransactionsPublic,
 } = require('../controllers/fundController');
+
+// Public – xem qua viewCode (không cần đăng nhập)
+router.get('/public/:viewCode', getClanPublic);
+router.get('/public/:viewCode/funds/:id/transactions', getTransactionsPublic);
 
 // Thông tin dòng họ
 router.get('/', authMiddleware, getClanData);

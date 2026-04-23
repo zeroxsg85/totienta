@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Button, Form, InputGroup, Modal, Badge, Card, Row, Col,
 } from 'react-bootstrap';
@@ -82,6 +83,7 @@ export default function ClanPage(): JSX.Element | null {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [viewCode, setViewCode] = useState<string>('');
 
   // Data
   const [clanInfo, setClanInfo] = useState<ClanInfo>({});
@@ -99,7 +101,13 @@ export default function ClanPage(): JSX.Element | null {
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (isAuthenticated) fetchClanData();
+    if (isAuthenticated) {
+      fetchClanData();
+      // Lấy viewCode để tạo link public
+      API.get<{ viewCode: string }>('/members/view-code')
+        .then(({ data }) => setViewCode(data.viewCode || ''))
+        .catch(() => {});
+    }
   }, [isAuthenticated]);
 
   const fetchClanData = async () => {
@@ -195,10 +203,21 @@ export default function ClanPage(): JSX.Element | null {
 
   return (
     <div className="container mt-5 pt-4">
-      <h2 className="mb-4">
-        <FontAwesomeIcon icon={faPeopleGroup} className="me-2" />
-        Quản Lý Dòng Họ
-      </h2>
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 className="mb-0">
+          <FontAwesomeIcon icon={faPeopleGroup} className="me-2" />
+          Quản Lý Dòng Họ
+        </h2>
+        {viewCode && (
+          <Link
+            href={`/${viewCode}/clan`}
+            target="_blank"
+            className="btn btn-outline-primary btn-sm"
+          >
+            🔗 Trang công khai dòng họ ↗
+          </Link>
+        )}
+      </div>
 
       {/* ══════════════ SỰ KIỆN SẮP TỚI ══════════════ */}
       <Card className="mb-4 border-0 shadow-sm">

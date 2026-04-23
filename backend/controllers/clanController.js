@@ -295,6 +295,34 @@ const updateVisibilitySettings = async (req, res) => {
     }
 };
 
+// ── Public: xem quỹ + sự kiện qua viewCode (không cần đăng nhập) ─────────────
+const getClanPublic = async (req, res) => {
+    try {
+        const { viewCode } = req.params;
+        const Member   = require('../models/Member');
+        const ClanFund = require('../models/ClanFund');
+
+        // Tìm userId qua viewCode trên Member
+        const member = await Member.findOne({ viewCode }).select('createdBy').lean();
+        if (!member) return res.status(404).json({ message: 'Không tìm thấy cây gia phả' });
+
+        const userId = member.createdBy;
+        const user   = await User.findById(userId).select('treeName name clanInfo events').lean();
+        if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+
+        const funds = await ClanFund.find({ createdBy: userId, isEnabled: true }).lean();
+
+        res.json({
+            treeName:  user.treeName || user.name,
+            clanInfo:  user.clanInfo || {},
+            events:    user.events   || [],
+            funds,
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error });
+    }
+};
+
 module.exports = {
     getClanData,
     updateClanInfo,
@@ -311,4 +339,5 @@ module.exports = {
     migrateShrine,
     getVisibilitySettings,
     updateVisibilitySettings,
+    getClanPublic,
 };
