@@ -346,6 +346,10 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
 
           {/* Mobile Toolbar */}
           <div className="mobile-toolbar">
+            <Link href={`/${viewCode}/clan`} className="btn btn-outline-secondary btn-sm" title="Dòng họ">
+              🏛️
+            </Link>
+
             <Button variant="outline-success" size="sm" onClick={handleExportImage} disabled={exporting} title="Xuất ảnh">
               <FontAwesomeIcon icon={faCamera} />
             </Button>
@@ -455,6 +459,10 @@ export default function ViewAccessClient({ viewCode }: ViewAccessClientProps): J
             </InputGroup>
 
             <div className="toolbar-buttons">
+              <Link href={`/${viewCode}/clan`} className="btn btn-outline-secondary btn-sm">
+                🏛️ Dòng họ
+              </Link>
+
               <Button variant="outline-primary" size="sm" onClick={handleExpandAll}>
                 <FontAwesomeIcon icon={faExpand} /> Mở rộng
               </Button>

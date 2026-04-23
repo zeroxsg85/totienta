@@ -6,6 +6,7 @@ import {
   Badge, Card, Col, Nav, Row, Spinner, Tab, Table, ProgressBar, Modal,
 } from 'react-bootstrap';
 import Link from 'next/link';
+import API from '@/lib/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ClanEvent {
@@ -62,7 +63,6 @@ const EVENT_TYPE_ICON: Record<string, string> = {
   'giỗ tổ': '🏮', 'họp họ': '👥', 'tảo mộ': '🌿', khác: '📅',
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 // ── FundDetailModal (public, read-only) ───────────────────────────────────────
 function FundDetailModal({ fund, viewCode, onHide }: { fund: ClanFund; viewCode: string; onHide: () => void }) {
@@ -71,9 +71,8 @@ function FundDetailModal({ fund, viewCode, onHide }: { fund: ClanFund; viewCode:
   const [tab, setTab] = useState('income');
 
   useEffect(() => {
-    fetch(`${API_BASE}/clan/public/${viewCode}/funds/${fund._id}/transactions`)
-      .then(r => r.json())
-      .then(data => setTransactions(Array.isArray(data) ? data : []))
+    API.get<FundTransaction[]>(`/clan/public/${viewCode}/funds/${fund._id}/transactions`)
+      .then(({ data }) => setTransactions(Array.isArray(data) ? data : []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [fund._id, viewCode]);
@@ -189,9 +188,8 @@ export default function PublicClanPage() {
   const [detailFund, setDetailFund] = useState<ClanFund | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/clan/public/${viewCode}`)
-      .then(r => r.json())
-      .then(d => setData(d))
+    API.get<PublicClanData>(`/clan/public/${viewCode}`)
+      .then(({ data: d }) => setData(d))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [viewCode]);
@@ -210,9 +208,9 @@ export default function PublicClanPage() {
   );
 
   const upcomingEvents = [...(data.events || [])].sort((a, b) => {
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-    return new Date(a.date).getTime() - new Date(b.date).getTime();
+    const da = a.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
+    const db = b.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;
+    return da - db;
   });
 
   return (

@@ -307,15 +307,16 @@ const getClanPublic = async (req, res) => {
         if (!member) return res.status(404).json({ message: 'Không tìm thấy cây gia phả' });
 
         const userId = member.createdBy;
-        const user   = await User.findById(userId).select('treeName name clanInfo events').lean();
+
+        const user  = await User.findById(userId).select('treeName name clanInfo events');
         if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
 
         const funds = await ClanFund.find({ createdBy: userId, isEnabled: true }).lean();
 
         res.json({
-            treeName:  user.treeName || user.name,
-            clanInfo:  user.clanInfo || {},
-            events:    user.events   || [],
+            treeName: user.treeName || user.name,
+            clanInfo: user.clanInfo  || {},
+            events:   user.events    || [],
             funds,
         });
     } catch (error) {
