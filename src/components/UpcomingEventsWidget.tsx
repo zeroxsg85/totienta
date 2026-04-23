@@ -105,16 +105,17 @@ function Section({ title, events, showDate = false, accent }: {
     );
 }
 
-export default function UpcomingEventsWidget() {
+export default function UpcomingEventsWidget({ refreshKey = 0 }: { refreshKey?: number }) {
     const [data, setData]     = useState<UpcomingData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         API.get<UpcomingData>('/members/upcoming-events')
             .then(({ data }) => setData(data))
             .catch(() => {})
             .finally(() => setLoading(false));
-    }, []);
+    }, [refreshKey]);
 
     if (loading) return <div className="text-center py-3"><Spinner animation="border" size="sm" /></div>;
     if (!data) return null;

@@ -11,6 +11,23 @@ import useDeviceType from '@/hooks/useDeviceType';
 import API from '@/lib/api';
 import '@/styles/Navbar.css';
 
+// Route cố định của app – không phải viewCode
+const KNOWN_ROUTES = new Set([
+  'members','suggestions','matches','clan','profile',
+  'login','register','verify-email','reset-password','about',
+]);
+
+function usePublicTreeContext() {
+  const pathname = usePathname();
+  const segments = pathname.split('/').filter(Boolean);
+  const first = segments[0];
+  if (!first || KNOWN_ROUTES.has(first)) return { viewCode: null, section: null };
+  return {
+    viewCode: first,
+    section: segments[1] ?? null, // null = tree, 'clan' = clan, 'shrine' = shrine
+  };
+}
+
 export default function Navbar(): JSX.Element {
   const { isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
@@ -18,6 +35,7 @@ export default function Navbar(): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [matchCount, setMatchCount] = useState<number>(0);
+  const { viewCode, section } = usePublicTreeContext();
 
   const handleLogout = (): void => {
     logout();
@@ -91,16 +109,16 @@ export default function Navbar(): JSX.Element {
         {/* Menu */}
         <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
           <ul className="navbar-nav">
-            {isAuthenticated && (
+            {isAuthenticated ? (
               <>
                 <li className={`nav-item ${pathname === '/members' ? 'active' : ''}`}>
                   <Link className="nav-link" href="/members" onClick={closeMenu}>
-                    Cây Của Bạn
+                    🌳 Cây Của Bạn
                   </Link>
                 </li>
                 <li className={`nav-item ${pathname === '/suggestions' ? 'active' : ''}`}>
                   <Link className="nav-link position-relative" href="/suggestions" onClick={closeMenu}>
-                    Đề xuất
+                    💡 Đề xuất
                     {pendingCount > 0 && (
                       <span className="notification-badge">{pendingCount > 9 ? '9+' : pendingCount}</span>
                     )}
@@ -108,7 +126,7 @@ export default function Navbar(): JSX.Element {
                 </li>
                 <li className={`nav-item ${pathname === '/matches' ? 'active' : ''}`}>
                   <Link className="nav-link position-relative" href="/matches" onClick={closeMenu}>
-                    Kết nối
+                    🔗 Kết nối
                     {matchCount > 0 && (
                       <span className="notification-badge" style={{ backgroundColor: '#198754' }}>
                         {matchCount > 9 ? '9+' : matchCount}
@@ -118,11 +136,29 @@ export default function Navbar(): JSX.Element {
                 </li>
                 <li className={`nav-item ${pathname === '/clan' ? 'active' : ''}`}>
                   <Link className="nav-link" href="/clan" onClick={closeMenu}>
-                    Dòng Họ
+                    🏛️ Dòng Họ
                   </Link>
                 </li>
               </>
-            )}
+            ) : viewCode ? (
+              /* Khách xem trang public – hiện link điều hướng giữa cây và dòng họ */
+              <>
+                {section !== null && (
+                  <li className="nav-item">
+                    <Link className="nav-link" href={`/${viewCode}`} onClick={closeMenu}>
+                      🌳 Cây Gia Phả
+                    </Link>
+                  </li>
+                )}
+                {section !== 'clan' && (
+                  <li className="nav-item">
+                    <Link className="nav-link" href={`/${viewCode}/clan`} onClick={closeMenu}>
+                      🏛️ Dòng Họ
+                    </Link>
+                  </li>
+                )}
+              </>
+            ) : null}
           </ul>
 
           <ul className="navbar-nav ms-auto">

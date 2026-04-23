@@ -88,6 +88,7 @@ export default function ClanPage(): JSX.Element | null {
   // Data
   const [clanInfo, setClanInfo] = useState<ClanInfo>({});
   const [events, setEvents] = useState<ClanEvent[]>([]);
+  const [widgetKey, setWidgetKey] = useState(0);
 
   // Event modal
   const [showEventModal, setShowEventModal] = useState(false);
@@ -169,6 +170,7 @@ export default function ClanPage(): JSX.Element | null {
         setEvents((prev) => [...prev, data]);
         toast.success('Đã thêm sự kiện');
       }
+      setWidgetKey(k => k + 1);
       setShowEventModal(false);
     } catch {
       toast.error('Lỗi khi lưu sự kiện');
@@ -182,6 +184,7 @@ export default function ClanPage(): JSX.Element | null {
     try {
       await API.delete(`/clan/events/${id}`);
       setEvents((prev) => prev.filter((ev) => ev._id !== id));
+      setWidgetKey(k => k + 1);
       toast.success('Đã xóa sự kiện');
     } catch {
       toast.error('Lỗi khi xóa sự kiện');
@@ -228,7 +231,7 @@ export default function ClanPage(): JSX.Element | null {
           </span>
         </Card.Header>
         <Card.Body className="py-2">
-          <UpcomingEventsWidget />
+          <UpcomingEventsWidget refreshKey={widgetKey} />
         </Card.Body>
       </Card>
 

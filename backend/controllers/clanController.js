@@ -58,6 +58,7 @@ const addEvent = async (req, res) => {
             { $push: { events: { title, date, lunarDate, type: type || 'khác', location, livestreamUrl } } },
             { new: true }
         ).select('events');
+        console.log('[addEvent] saved, total events now:', user.events.length);
         res.status(201).json(user.events[user.events.length - 1]);
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi thêm sự kiện', error });
@@ -301,22 +302,80 @@ const getClanPublic = async (req, res) => {
         const { viewCode } = req.params;
         const Member   = require('../models/Member');
         const ClanFund = require('../models/ClanFund');
+        const { lunarDayMonthToSolarInYear } = require('../utils/lunarCalendar');
 
         // Tìm userId qua viewCode trên Member
-        const member = await Member.findOne({ viewCode }).select('createdBy').lean();
-        if (!member) return res.status(404).json({ message: 'Không tìm thấy cây gia phả' });
+        const anchor = await Member.findOne({ viewCode }).select('createdBy').lean();
+        if (!anchor) return res.status(404).json({ message: 'Không tìm thấy cây gia phả' });
 
-        const userId = member.createdBy;
+        const userId = anchor.createdBy;
 
-        const user  = await User.findById(userId).select('treeName name clanInfo events');
+        const [user, members, funds] = await Promise.all([
+            User.findById(userId).select('treeName name clanInfo events').lean(),
+            Member.find({ createdBy: userId })
+                  .select('name isAlive birthday deathDate anniversaryDate viewCode')
+                  .lean(),
+            ClanFund.find({ createdBy: userId, isEnabled: true }).lean(),
+        ]);
         if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
 
-        const funds = await ClanFund.find({ createdBy: userId, isEnabled: true }).lean();
+        // ── Tính giỗ + sinh nhật từ thành viên ────────────────────────────────
+        const todayY = new Date().getFullYear();
+        const memberEvents = [];
+
+        for (const m of members) {
+            // Sinh nhật
+            if (m.isAlive !== false && m.birthday?.solar) {
+                const bd = new Date(m.birthday.solar);
+                if (!isNaN(bd.getTime())) {
+                    memberEvents.push({
+                        type:   'birthday',
+                        label:  `Sinh nhật ${m.name}`,
+                        date:   new Date(todayY, bd.getMonth(), bd.getDate()).toISOString().slice(0, 10),
+                        member: { _id: m._id, name: m.name, viewCode: m.viewCode },
+                    });
+                }
+            }
+
+            // Ngày giỗ (cùng logic với getUpcomingEvents)
+            if (m.isAlive === false) {
+                const ann = m.anniversaryDate?.lunar;
+                if (ann?.day && ann?.month) {
+                    const solar = lunarDayMonthToSolarInYear(ann.day, ann.month, todayY);
+                    if (solar) memberEvents.push({
+                        type: 'anniversary', label: `Giỗ ${m.name}`,
+                        date: solar.toISOString().slice(0, 10),
+                        member: { _id: m._id, name: m.name, viewCode: m.viewCode },
+                        lunarDay: ann.day, lunarMonth: ann.month,
+                    });
+                } else if (m.deathDate?.solar) {
+                    const dd = new Date(m.deathDate.solar);
+                    if (!isNaN(dd.getTime())) memberEvents.push({
+                        type: 'anniversary', label: `Giỗ ${m.name}`,
+                        date: new Date(todayY, dd.getMonth(), dd.getDate()).toISOString().slice(0, 10),
+                        member: { _id: m._id, name: m.name, viewCode: m.viewCode },
+                    });
+                } else if (m.deathDate?.lunar?.day && m.deathDate?.lunar?.month) {
+                    const dl = m.deathDate.lunar;
+                    const solar = lunarDayMonthToSolarInYear(dl.day, dl.month, todayY);
+                    if (solar) memberEvents.push({
+                        type: 'anniversary', label: `Giỗ ${m.name}`,
+                        date: solar.toISOString().slice(0, 10),
+                        member: { _id: m._id, name: m.name, viewCode: m.viewCode },
+                        lunarDay: dl.day, lunarMonth: dl.month,
+                    });
+                }
+            }
+        }
+
+        // Sắp xếp theo ngày trong năm
+        memberEvents.sort((a, b) => a.date.localeCompare(b.date));
 
         res.json({
             treeName: user.treeName || user.name,
             clanInfo: user.clanInfo  || {},
             events:   user.events    || [],
+            memberEvents,
             funds,
         });
     } catch (error) {

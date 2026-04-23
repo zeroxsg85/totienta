@@ -42,10 +42,20 @@ interface FundTransaction {
   note?: string;
 }
 
+interface MemberEvent {
+  type: 'birthday' | 'anniversary';
+  label: string;
+  date: string; // YYYY-MM-DD
+  member?: { _id: string; name: string; viewCode?: string };
+  lunarDay?: number;
+  lunarMonth?: number;
+}
+
 interface PublicClanData {
   treeName: string;
   clanInfo: { origin?: string; ancestralHome?: string; motto?: string };
   events: ClanEvent[];
+  memberEvents: MemberEvent[];
   funds: ClanFund[];
 }
 
@@ -184,7 +194,7 @@ export default function PublicClanPage() {
   const { viewCode } = useParams<{ viewCode: string }>();
   const [data, setData]     = useState<PublicClanData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab]       = useState('events');
+  const [tab, setTab]       = useState('gio');
   const [detailFund, setDetailFund] = useState<ClanFund | null>(null);
 
   useEffect(() => {
@@ -213,6 +223,13 @@ export default function PublicClanPage() {
     return da - db;
   });
 
+  const memberEvents  = data.memberEvents || [];
+  const anniversaries = memberEvents.filter(e => e.type === 'anniversary');
+  const birthdays     = memberEvents.filter(e => e.type === 'birthday');
+  // Tab "Sự kiện": sinh nhật + sự kiện tùy chỉnh
+  const generalCount  = birthdays.length + upcomingEvents.length;
+  const gioCount      = anniversaries.length;
+
   return (
     <div className="container mt-4 pb-5" style={{ maxWidth: 860 }}>
       {/* Header */}
@@ -227,64 +244,141 @@ export default function PublicClanPage() {
       <Tab.Container activeKey={tab} onSelect={k => setTab(k || 'events')}>
         <Nav variant="tabs" className="mb-3">
           <Nav.Item>
+            <Nav.Link eventKey="gio">
+              🕯️ Ngày Giỗ
+              {gioCount > 0 && <Badge bg="secondary" className="ms-1" style={{ fontSize: '0.7rem' }}>{gioCount}</Badge>}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
             <Nav.Link eventKey="events">
-              📅 Sự kiện dòng họ
-              {upcomingEvents.length > 0 && (
-                <Badge bg="primary" className="ms-1" style={{ fontSize: '0.7rem' }}>{upcomingEvents.length}</Badge>
-              )}
+              📅 Sự kiện &amp; Sinh nhật
+              {generalCount > 0 && <Badge bg="primary" className="ms-1" style={{ fontSize: '0.7rem' }}>{generalCount}</Badge>}
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="funds">
               💰 Quỹ dòng họ
-              {data.funds.length > 0 && (
-                <Badge bg="success" className="ms-1" style={{ fontSize: '0.7rem' }}>{data.funds.length}</Badge>
-              )}
+              {data.funds.length > 0 && <Badge bg="success" className="ms-1" style={{ fontSize: '0.7rem' }}>{data.funds.length}</Badge>}
             </Nav.Link>
           </Nav.Item>
         </Nav>
 
         <Tab.Content>
-          {/* ── SỰ KIỆN ── */}
-          <Tab.Pane eventKey="events">
-            {upcomingEvents.length === 0 ? (
-              <p className="text-muted text-center py-5">Chưa có sự kiện nào được ghi nhận.</p>
+          {/* ── GIỖ ── */}
+          <Tab.Pane eventKey="gio">
+            {anniversaries.length === 0 ? (
+              <p className="text-muted text-center py-5">Chưa có thông tin ngày giỗ.</p>
             ) : (
               <Row className="g-3">
-                {upcomingEvents.map((ev, i) => (
-                  <Col xs={12} md={6} key={ev._id || i}>
-                    <Card className="h-100">
-                      <Card.Body>
-                        <div className="d-flex gap-2 align-items-start">
-                          <span style={{ fontSize: '1.5rem' }}>{EVENT_TYPE_ICON[ev.type || ''] || '📅'}</span>
-                          <div className="flex-grow-1">
-                            <div className="fw-semibold">{ev.title}</div>
-                            {ev.type && (
-                              <Badge bg="secondary" className="mb-1" style={{ fontSize: '0.7rem' }}>{ev.type}</Badge>
-                            )}
-                            <div className="text-muted small">
-                              {ev.date && <span>📆 {fmtDate(ev.date)}</span>}
-                              {ev.lunarDate?.day && ev.lunarDate?.month && (
-                                <span className="ms-2">
-                                  🌙 {ev.lunarDate.day}/{ev.lunarDate.month}
-                                  {ev.lunarDate.year ? `/${ev.lunarDate.year}` : ''} âm lịch
-                                </span>
-                              )}
-                            </div>
-                            {ev.location && <div className="text-muted small">📍 {ev.location}</div>}
-                            {ev.livestreamUrl && (
-                              <a href={ev.livestreamUrl} target="_blank" rel="noopener noreferrer"
-                                className="btn btn-sm btn-outline-danger mt-1 py-0">
-                                🔴 Xem livestream
-                              </a>
+                {anniversaries.map((ev, i) => (
+                  <Col xs={12} md={6} key={i}>
+                    <Card className="h-100" style={{ borderColor: '#d4a96a' }}>
+                      <Card.Body className="d-flex align-items-center gap-3">
+                        <span style={{ fontSize: '2rem', flexShrink: 0 }}>🕯️</span>
+                        <div className="flex-grow-1">
+                          <div className="fw-bold" style={{ fontSize: '1rem' }}>{ev.label}</div>
+                          <div className="text-muted" style={{ fontSize: '0.85rem' }}>
+                            📆 {fmtDate(ev.date)}
+                            {ev.lunarDay && ev.lunarMonth && (
+                              <span className="ms-2">🌙 {ev.lunarDay}/{ev.lunarMonth} âm lịch</span>
                             )}
                           </div>
                         </div>
+                        {ev.member?.viewCode && ev.member?._id && (
+                          <Link
+                            href={`/${ev.member.viewCode}/shrine/${ev.member._id}`}
+                            className="btn btn-sm btn-outline-secondary flex-shrink-0"
+                            style={{ fontSize: '0.8rem' }}
+                          >
+                            🏮 Bàn thờ
+                          </Link>
+                        )}
                       </Card.Body>
                     </Card>
                   </Col>
                 ))}
               </Row>
+            )}
+          </Tab.Pane>
+
+          {/* ── SỰ KIỆN & SINH NHẬT ── */}
+          <Tab.Pane eventKey="events">
+            {generalCount === 0 ? (
+              <p className="text-muted text-center py-5">Chưa có sự kiện nào.</p>
+            ) : (
+              <>
+                {/* Sinh nhật */}
+                {birthdays.length > 0 && (
+                  <div className="mb-4">
+                    {upcomingEvents.length > 0 && (
+                      <h6 className="text-muted mb-2" style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        🎂 Sinh nhật ({birthdays.length})
+                      </h6>
+                    )}
+                    <Row className="g-2">
+                      {birthdays.map((ev, i) => (
+                        <Col xs={12} md={6} key={i}>
+                          <Card className="h-100 border-0 bg-light">
+                            <Card.Body className="py-2 px-3 d-flex align-items-center gap-2">
+                              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>🎂</span>
+                              <div className="flex-grow-1">
+                                <div className="fw-semibold" style={{ fontSize: '0.93rem' }}>{ev.label}</div>
+                                <div className="text-muted" style={{ fontSize: '0.8rem' }}>📆 {fmtDate(ev.date)}</div>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
+                )}
+
+                {/* Sự kiện tùy chỉnh */}
+                {upcomingEvents.length > 0 && (
+                  <>
+                    {birthdays.length > 0 && (
+                      <h6 className="text-muted mb-2" style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        📅 Sự kiện ({upcomingEvents.length})
+                      </h6>
+                    )}
+                    <Row className="g-3">
+                      {upcomingEvents.map((ev, i) => (
+                        <Col xs={12} md={6} key={ev._id || i}>
+                          <Card className="h-100">
+                            <Card.Body>
+                              <div className="d-flex gap-2 align-items-start">
+                                <span style={{ fontSize: '1.5rem' }}>{EVENT_TYPE_ICON[ev.type || ''] || '📅'}</span>
+                                <div className="flex-grow-1">
+                                  <div className="fw-semibold">{ev.title}</div>
+                                  {ev.type && (
+                                    <Badge bg="secondary" className="mb-1" style={{ fontSize: '0.7rem' }}>{ev.type}</Badge>
+                                  )}
+                                  <div className="text-muted small">
+                                    {ev.date && <span>📆 {fmtDate(ev.date)}</span>}
+                                    {ev.lunarDate?.day && ev.lunarDate?.month && (
+                                      <span className="ms-2">
+                                        🌙 {ev.lunarDate.day}/{ev.lunarDate.month}
+                                        {ev.lunarDate.year ? `/${ev.lunarDate.year}` : ''} âm lịch
+                                      </span>
+                                    )}
+                                  </div>
+                                  {ev.location && <div className="text-muted small">📍 {ev.location}</div>}
+                                  {ev.livestreamUrl && (
+                                    <a href={ev.livestreamUrl} target="_blank" rel="noopener noreferrer"
+                                      className="btn btn-sm btn-outline-danger mt-1 py-0">
+                                      🔴 Xem livestream
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
+                  </>
+                )}
+              </>
             )}
           </Tab.Pane>
 
