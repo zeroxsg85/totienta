@@ -222,34 +222,53 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
 
   return (
     <>
-      <div style={{ minHeight: '100vh', background: '#f7f3ee', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#f7f3ee",
+          padding: "2rem 1rem",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         {/* Back link */}
-        <div style={{ width: '100%', maxWidth: 520, marginBottom: '0.75rem' }}>
-          <Link href={`/${viewCode}`} style={{ color: theme.border, textDecoration: 'none', fontSize: '0.9rem' }}>
+        <div style={{ width: "100%", maxWidth: 520, marginBottom: "0.75rem" }}>
+          <Link href={`/${viewCode}`} style={{ color: theme.border, textDecoration: "none", fontSize: "0.9rem" }}>
             ← Về gia phả
           </Link>
         </div>
 
         {/* Card chính */}
-        <div style={{ width: '100%', maxWidth: 520, background: theme.bg, borderRadius: 16, border: `2px solid ${theme.border}`, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 520,
+            background: theme.bg,
+            borderRadius: 16,
+            border: `2px solid ${theme.border}`,
+            overflow: "hidden",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+          }}
+        >
           {/* Header */}
-          <div style={{ background: theme.border, padding: '1rem', textAlign: 'center' }}>
-            <span style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600 }}>🏮 Bàn Thờ Số</span>
+          <div style={{ background: theme.border, padding: "1rem", textAlign: "center" }}>
+            <span style={{ color: "#fff", fontSize: "1.2rem", fontWeight: 600 }}>🏮 Bàn Thờ Số</span>
           </div>
 
-          <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+          <div style={{ padding: "1.5rem", textAlign: "center" }}>
             {/* Avatar + tên */}
             <div className="mb-3">
               <img
                 src={avatarSrc}
                 alt={member.name}
-                style={{ width: 110, height: 110, borderRadius: '50%', border: `3px solid ${theme.border}`, objectFit: 'cover' }}
+                style={{ width: 110, height: 110, borderRadius: "50%", border: `3px solid ${theme.border}`, objectFit: "cover" }}
               />
-              <h4 className="mt-3 mb-0" style={{ color: theme.border }}>{member.name}</h4>
+              <h4 className="mt-3 mb-0" style={{ color: theme.border }}>
+                {member.name}
+              </h4>
               {member.deathDate?.solar && (
-                <small className="text-muted">
-                  {new Date(member.deathDate.solar).toLocaleDateString('vi-VN')}
-                </small>
+                <small className="text-muted">{new Date(member.deathDate.solar).toLocaleDateString("vi-VN")}</small>
               )}
             </div>
 
@@ -257,7 +276,7 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
             {member.memorial?.epitaph && (
               <blockquote
                 className="blockquote mb-3"
-                style={{ borderLeft: `3px solid ${theme.border}`, paddingLeft: 12, textAlign: 'left' }}
+                style={{ borderLeft: `3px solid ${theme.border}`, paddingLeft: 12, textAlign: "left" }}
               >
                 <p className="fst-italic small mb-0">"{member.memorial.epitaph}"</p>
               </blockquote>
@@ -267,7 +286,7 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
 
             {/* Nhang */}
             <div className="mb-4">
-              <div style={{ fontSize: '3rem', lineHeight: 1 }}>{incenseOnCooldown ? '🕯️' : '🪔'}</div>
+              <div style={{ fontSize: "3rem", lineHeight: 1 }}>{incenseOnCooldown ? "🕯️" : "🪔"}</div>
               <div className="text-muted small mt-2">
                 Đã thắp <strong>{incenseCount}</strong> nén nhang
               </div>
@@ -282,11 +301,9 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
                 size="lg"
                 onClick={handleBurnIncense}
                 disabled={incenseOnCooldown || burningIncense}
-                style={{ background: incenseOnCooldown ? '#aaa' : theme.btnBg, border: 'none', borderRadius: 30 }}
+                style={{ background: incenseOnCooldown ? "#aaa" : theme.btnBg, border: "none", borderRadius: 30 }}
               >
-                {burningIncense ? '🙏 Đang thắp...'
-                  : incenseOnCooldown ? `⏳ ${formatCountdown(incenseRemaining)}`
-                  : '🙏 Thắp nhang'}
+                {burningIncense ? "🙏 Đang thắp..." : incenseOnCooldown ? `⏳ ${formatCountdown(incenseRemaining)}` : "🙏 Thắp nhang"}
               </Button>
             </div>
 
@@ -298,12 +315,8 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
                 <span style={{ color: theme.border, fontWeight: 600 }}>
                   🎁 Lễ vật {totalOfferings > 0 && <Badge bg="secondary">{totalOfferings}</Badge>}
                 </span>
-                <Button
-                  size="sm"
-                  onClick={() => setOfferingPanel((v) => !v)}
-                  style={{ background: theme.btnBg, border: 'none' }}
-                >
-                  {offeringPanel ? 'Thu gọn ▲' : 'Dâng lễ vật ▼'}
+                <Button size="sm" onClick={() => setOfferingPanel((v) => !v)} style={{ background: theme.btnBg, border: "none" }}>
+                  {offeringPanel ? "Thu gọn ▲" : "Dâng lễ vật ▼"}
                 </Button>
               </div>
 
@@ -315,7 +328,7 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
                     .map((s) => {
                       const preset = PRESET_OFFERINGS.find((p) => p.label === s.label);
                       return (
-                        <span key={s.label} className="badge bg-secondary" style={{ fontSize: '0.85rem' }}>
+                        <span key={s.label} className="badge bg-secondary" style={{ fontSize: "0.85rem" }}>
                           {preset?.emoji} {s.label} ×{s.count}
                         </span>
                       );
@@ -324,7 +337,7 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
               )}
 
               {offeringPanel && (
-                <div className="border rounded p-2" style={{ background: '#fff8', textAlign: 'left' }}>
+                <div className="border rounded p-2" style={{ background: "#fff8", textAlign: "left" }}>
                   {PRESET_OFFERINGS.map(({ emoji, label }) => {
                     const stat = offeringStats.find((s) => s.label === label);
                     const rem = offeringRemaining[label] || 0;
@@ -332,17 +345,18 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
                     const featured = featuredLabels.has(label);
                     const loading = offeringLoading === label;
                     return (
-                      <div key={label}
+                      <div
+                        key={label}
                         className="d-flex justify-content-between align-items-center py-2"
-                        style={{ borderBottom: '1px solid #eee' }}
+                        style={{ borderBottom: "1px solid #eee" }}
                       >
                         <div>
-                          <span style={{ fontSize: '1.1rem' }}>{emoji}</span>{' '}
+                          <span style={{ fontSize: "1.1rem" }}>{emoji}</span>{" "}
                           <span style={{ fontWeight: featured ? 600 : 400 }}>{label}</span>
                           {stat?.count ? <span className="text-muted small ms-2">×{stat.count}</span> : null}
                           {stat?.lastOffered && (
-                            <div style={{ fontSize: '0.7rem', color: '#999' }}>
-                              Gần nhất: {new Date(stat.lastOffered).toLocaleDateString('vi-VN')}
+                            <div style={{ fontSize: "0.7rem", color: "#999" }}>
+                              Gần nhất: {new Date(stat.lastOffered).toLocaleDateString("vi-VN")}
                             </div>
                           )}
                         </div>
@@ -350,9 +364,9 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
                           size="sm"
                           disabled={onCooldown || !!loading}
                           onClick={() => handleOffer(label)}
-                          style={{ background: onCooldown ? '#ccc' : theme.btnBg, border: 'none', minWidth: 72, fontSize: '0.8rem' }}
+                          style={{ background: onCooldown ? "#ccc" : theme.btnBg, border: "none", minWidth: 72, fontSize: "0.8rem" }}
                         >
-                          {loading ? '...' : onCooldown ? formatCountdown(rem) : 'Dâng'}
+                          {loading ? "..." : onCooldown ? formatCountdown(rem) : "Dâng"}
                         </Button>
                       </div>
                     );
@@ -368,31 +382,33 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ color: theme.border, fontWeight: 600 }}>📜 Hoạt động</span>
                 <Button size="sm" variant="outline-secondary" onClick={() => setShowLog((v) => !v)}>
-                  {showLog ? 'Thu gọn ▲' : 'Xem ▼'}
+                  {showLog ? "Thu gọn ▲" : "Xem ▼"}
                 </Button>
               </div>
               {showLog && (
-                <div style={{ textAlign: 'left', maxHeight: 260, overflowY: 'auto' }}>
+                <div style={{ textAlign: "left", maxHeight: 260, overflowY: "auto" }}>
                   {shrineLogs.length === 0 ? (
                     <p className="text-muted small text-center my-2">Chưa có hoạt động nào</p>
                   ) : (
                     shrineLogs.map((log) => {
-                      const preset = log.action === 'offering'
-                        ? PRESET_OFFERINGS.find((p) => p.label === log.offeringLabel)
-                        : null;
+                      const preset = log.action === "offering" ? PRESET_OFFERINGS.find((p) => p.label === log.offeringLabel) : null;
                       return (
-                        <div key={log._id}
+                        <div
+                          key={log._id}
                           className="d-flex justify-content-between align-items-center py-1 px-1"
-                          style={{ borderBottom: '1px solid #f0e8d8', fontSize: '0.8rem' }}
+                          style={{ borderBottom: "1px solid #f0e8d8", fontSize: "0.8rem" }}
                         >
                           <span>
-                            {log.action === 'incense'
-                              ? '🙏 Thắp nhang'
-                              : `🙏 Dâng ${preset?.emoji || ''} ${log.offeringLabel}`}
-                            {' '}<span className="text-muted">– {log.displayName}</span>
+                            {log.action === "incense" ? "🙏 Thắp nhang" : `🙏 Dâng ${preset?.emoji || ""} ${log.offeringLabel}`}{" "}
+                            <span className="text-muted">– {log.displayName}</span>
                           </span>
-                          <span className="text-muted" style={{ whiteSpace: 'nowrap', marginLeft: 8 }}>
-                            {new Date(log.createdAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                          <span className="text-muted" style={{ whiteSpace: "nowrap", marginLeft: 8 }}>
+                            {new Date(log.createdAt).toLocaleString("vi-VN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              day: "2-digit",
+                              month: "2-digit",
+                            })}
                           </span>
                         </div>
                       );
@@ -409,22 +425,20 @@ export default function ShrinePageContent({ member, viewCode, baseUrl }: Props) 
       </div>
 
       {/* Identity Modal */}
-      <Modal show={showIdentity} onHide={() => setShowIdentity(false)} centered size="sm">
+      <Modal show={showIdentity} onHide={() => setShowIdentity(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title style={{ fontSize: '1rem' }}>🙏 Bạn muốn tiếp tục với tư cách?</Modal.Title>
+          <Modal.Title style={{ fontSize: "1rem" }}>🙏 Bạn muốn tiếp tục với tư cách?</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center pb-2">
-          <p className="text-muted small mb-3">
-            Hành động của bạn sẽ được ghi lại để tưởng nhớ người đã mất.
-          </p>
+          <p className="text-muted small mb-3">Hành động của bạn sẽ được ghi lại để tưởng nhớ người đã mất.</p>
           <div className="d-grid gap-2">
-            <Button onClick={() => handleIdentityChoice('login')} style={{ background: '#4a6fa5', border: 'none' }}>
+            <Button onClick={() => handleIdentityChoice("login")} style={{ background: "#4a6fa5", border: "none" }}>
               🔐 Đăng nhập tài khoản
             </Button>
-            <Button variant="outline-primary" onClick={() => handleIdentityChoice('register')}>
+            <Button variant="outline-primary" onClick={() => handleIdentityChoice("register")}>
               📝 Đăng ký tài khoản mới
             </Button>
-            <Button variant="outline-secondary" onClick={() => handleIdentityChoice('anon')}>
+            <Button variant="outline-secondary" onClick={() => handleIdentityChoice("anon")}>
               👤 Tiếp tục Ẩn danh
             </Button>
           </div>
