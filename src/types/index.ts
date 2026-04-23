@@ -177,6 +177,7 @@ export interface UserProfile {
   clanInfo?: ClanInfo;
   visibilitySettings?: VisibilitySettings;
   viewCode?: string;
+  isVerified?: boolean;
 }
 
 // ── Form data ─────────────────────────────────────────────────────────────────

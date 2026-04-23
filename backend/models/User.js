@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema({
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
 
+    // Xác thực email
+    isVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String },
+    emailVerificationExpire: { type: Date },
+
     phone: { type: String, default: '' },
     address: { type: String, default: '' },
     birthday: { type: Date, default: null },

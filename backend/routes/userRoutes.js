@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, forgotPassword, resetPassword, changePassword, getProfile, updateProfile } = require('../controllers/userController');
+const { registerUser, loginUser, forgotPassword, resetPassword, changePassword, getProfile, updateProfile, verifyEmail, resendVerification } = require('../controllers/userController');
 const { setup2FA, verify2FA, disable2FA, get2FAStatus } = require('../controllers/twoFactorController');
 const router = express.Router();
 
@@ -14,6 +14,10 @@ router.post('/reset-password', resetPassword);
 router.post('/change-password', protect, changePassword);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
+
+// Kích hoạt email
+router.get('/verify-email/:token', verifyEmail);          // public – link trong email
+router.post('/resend-verification', protect, resendVerification);
 
 // 2FA
 router.get('/2fa/status',  protect, get2FAStatus);

@@ -48,6 +48,8 @@ export default function MembersPage(): JSX.Element | null {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
   const [defaultChildId, setDefaultChildId] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState<boolean>(true);
+  const [resendingEmail, setResendingEmail] = useState<boolean>(false);
 
 
 
@@ -125,12 +127,34 @@ export default function MembersPage(): JSX.Element | null {
     }
   };
 
+  const fetchProfile = async (): Promise<void> => {
+    try {
+      const { data } = await API.get('/users/profile');
+      setIsVerified(data.isVerified ?? true);
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchMembers();
       fetchViewCode();
+      fetchProfile();
     }
   }, [isAuthenticated]);
+
+  const handleResendVerification = async (): Promise<void> => {
+    setResendingEmail(true);
+    try {
+      await API.post('/users/resend-verification');
+      toast.success('Đã gửi lại email kích hoạt! Kiểm tra hộp thư của bạn.');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Không thể gửi email. Thử lại sau.');
+    } finally {
+      setResendingEmail(false);
+    }
+  };
 
   const generateViewCode = async (): Promise<void> => {
     try {
@@ -293,8 +317,13 @@ export default function MembersPage(): JSX.Element | null {
       await API.post('/members', memberData);
       toast.success('Đã thêm thành viên!');
       fetchMembers();
-    } catch {
-      toast.error('Lỗi khi thêm thành viên');
+    } catch (err: any) {
+      if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        toast.error('Bạn cần kích hoạt tài khoản qua email trước khi thêm thành viên.');
+        setIsVerified(false);
+      } else {
+        toast.error('Lỗi khi thêm thành viên');
+      }
     }
   };
 
@@ -365,6 +394,24 @@ export default function MembersPage(): JSX.Element | null {
       className="container-fluid p-0"
       onContextMenu={(e) => e.preventDefault()}
     >
+      {/* ===== BANNER XÁC THỰC EMAIL ===== */}
+      {!isVerified && (
+        <div className="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0 rounded-0 px-3 py-2" style={{ borderBottom: '2px solid #ffc107' }}>
+          <span>
+            ⚠️ <strong>Tài khoản chưa được kích hoạt.</strong> Kiểm tra email để xác thực, hoặc{' '}
+            <button
+              className="btn btn-link p-0 align-baseline fw-semibold"
+              style={{ color: '#856404' }}
+              onClick={handleResendVerification}
+              disabled={resendingEmail}
+            >
+              {resendingEmail ? 'Đang gửi...' : 'gửi lại email kích hoạt'}
+            </button>
+            .
+          </span>
+        </div>
+      )}
+
       {/* ===== MOBILE LAYOUT ===== */}
       {isMobile && (
         <>
@@ -472,6 +519,8 @@ export default function MembersPage(): JSX.Element | null {
               <div className="text-center mt-3">
                 <p className="text-muted">Chưa có thành viên nào.</p>
                 <Button
+                  disabled={!isVerified}
+                  title={!isVerified ? 'Kích hoạt tài khoản qua email trước' : undefined}
                   onClick={() => {
                     if (isEmptyTree) {
                       setSelectedParentId(null);
@@ -571,6 +620,8 @@ export default function MembersPage(): JSX.Element | null {
               <div className="text-center mt-5 pt-4">
                 <p className="text-muted">Chưa có thành viên nào trong cây gia phả.</p>
                 <Button
+                  disabled={!isVerified}
+                  title={!isVerified ? 'Kích hoạt tài khoản qua email trước' : undefined}
                   onClick={() => {
                     if (isEmptyTree) {
                       setSelectedParentId(null);

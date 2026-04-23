@@ -25,33 +25,48 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Email đã được sử dụng' });
         }
 
-        const user = await User.create({ name, email, password });
-        try {
-            // gửi email chúc mừng (chạy background)
-            setTimeout(() => {
-                sendEmail({
-                    to: user.email,
-                    subject: 'Chào mừng bạn đến với ToTienTa.com 🎉',
-                    html: `
-    <h2>Chào ${user.name || 'bạn'} 👋</h2>
-    <p>Bạn đã đăng ký tài khoản thành công tại <strong>ToTienTa.com</strong>.</p>
-    <p>Bây giờ bạn có thể đăng nhập và bắt đầu tạo cây gia phả của mình.</p>
-    <br />
-    <p>Chúc bạn có trải nghiệm tuyệt vời 💙</p>
-    <hr />
-    <b>Cần hỗ trợ vui lòng liên hệ: 0327.691.726 (Thanh Tùng)</b>
-    <small>ToTienTa.com Team</small>
-  `,
-                }).catch(e => console.error('Gửi mail chào mừng thất bại:', e));
-            }, 0);
-        } catch (e) {
-            console.error('Gửi mail chào mừng thất bại:', e);
-        }
+        // Tạo token kích hoạt (raw để gửi mail, hashed để lưu DB)
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+        const user = await User.create({
+            name, email, password,
+            isVerified: false,
+            emailVerificationToken: hashedToken,
+            emailVerificationExpire: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+        });
+
+        const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.totienta.com';
+        const verifyUrl = `${APP_URL}/verify-email/${rawToken}`;
+
+        // Gửi email kích hoạt (background)
+        setTimeout(() => {
+            sendEmail({
+                to: user.email,
+                subject: '✅ Kích hoạt tài khoản ToTienTa.com của bạn',
+                html: `
+<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
+  <h2>Chào ${user.name || 'bạn'} 👋</h2>
+  <p>Cảm ơn bạn đã đăng ký tại <strong>ToTienTa.com</strong>!</p>
+  <p>Nhấn nút bên dưới để kích hoạt tài khoản và bắt đầu tạo cây gia phả:</p>
+  <div style="text-align:center;margin:32px 0">
+    <a href="${verifyUrl}"
+       style="background:#0d6efd;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:16px;font-weight:bold">
+      ✅ Kích hoạt tài khoản
+    </a>
+  </div>
+  <p style="color:#888;font-size:13px">Link có hiệu lực trong <strong>24 giờ</strong>. Nếu bạn không đăng ký, hãy bỏ qua email này.</p>
+  <hr/>
+  <small style="color:#aaa">Cần hỗ trợ: 0327.691.726 (Thanh Tùng) – ToTienTa.com</small>
+</div>`,
+            }).catch(e => console.error('Gửi mail kích hoạt thất bại:', e));
+        }, 0);
 
         res.status(201).json({
             _id: user._id,
             name: user.name,
             email: user.email,
+            isVerified: false,
             token: generateToken(user._id),
         });
     } catch (error) {
@@ -248,6 +263,77 @@ const updateProfile = async (req, res) => {
     }
 };
 
+// =======================
+// Kích hoạt email
+// =======================
+const verifyEmail = async (req, res) => {
+    try {
+        const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+        const user = await User.findOne({
+            emailVerificationToken: hashedToken,
+            emailVerificationExpire: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Link kích hoạt không hợp lệ hoặc đã hết hạn.' });
+        }
+
+        user.isVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpire = undefined;
+        await user.save();
+
+        res.json({ message: 'Tài khoản đã được kích hoạt thành công!' });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error });
+    }
+};
+
+// =======================
+// Gửi lại email kích hoạt
+// =======================
+const resendVerification = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'Không tìm thấy tài khoản' });
+        if (user.isVerified) return res.status(400).json({ message: 'Tài khoản đã được kích hoạt rồi' });
+
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+        user.emailVerificationToken = hashedToken;
+        user.emailVerificationExpire = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await user.save();
+
+        const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.totienta.com';
+        const verifyUrl = `${APP_URL}/verify-email/${rawToken}`;
+
+        await sendEmail({
+            to: user.email,
+            subject: '✅ Kích hoạt tài khoản ToTienTa.com của bạn',
+            html: `
+<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
+  <h2>Chào ${user.name || 'bạn'} 👋</h2>
+  <p>Nhấn nút bên dưới để kích hoạt tài khoản <strong>ToTienTa.com</strong>:</p>
+  <div style="text-align:center;margin:32px 0">
+    <a href="${verifyUrl}"
+       style="background:#0d6efd;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:16px;font-weight:bold">
+      ✅ Kích hoạt tài khoản
+    </a>
+  </div>
+  <p style="color:#888;font-size:13px">Link có hiệu lực trong <strong>24 giờ</strong>.</p>
+  <hr/>
+  <small style="color:#aaa">ToTienTa.com</small>
+</div>`,
+        });
+
+        res.json({ message: 'Đã gửi lại email kích hoạt!' });
+    } catch (error) {
+        res.status(500).json({ message: 'Không thể gửi email', error });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
@@ -255,5 +341,7 @@ module.exports = {
     resetPassword,
     changePassword,
     getProfile,
-    updateProfile
+    updateProfile,
+    verifyEmail,
+    resendVerification,
 };

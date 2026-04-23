@@ -234,6 +234,14 @@ const getAllMembers = async (req, res) => {
 
 // Thêm thành viên mới (hỗ trợ thêm CHA/MẸ cho root)
 const createMember = async (req, res) => {
+    // Guard: tài khoản phải kích hoạt email trước
+    if (!req.user.isVerified) {
+        return res.status(403).json({
+            message: 'Bạn cần kích hoạt tài khoản qua email trước khi thêm thành viên.',
+            code: 'EMAIL_NOT_VERIFIED',
+        });
+    }
+
     try {
         const {
             name,
