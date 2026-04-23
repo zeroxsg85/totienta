@@ -13,8 +13,9 @@ import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
 import API from '@/lib/api';
 import Loading from '@/components/Loading';
-import { ClanInfo, Fund, ClanEvent, LunarDate } from '@/types';
+import { ClanInfo, ClanEvent, LunarDate } from '@/types';
 import VisibilitySettingsPanel from './VisibilitySettings';
+import FundManager from '@/components/FundManager';
 
 const EVENT_TYPES = ['giỗ tổ', 'họp họ', 'tảo mộ', 'khác'] as const;
 type EventType = typeof EVENT_TYPES[number];
@@ -75,7 +76,6 @@ export default function ClanPage(): JSX.Element | null {
 
   // Data
   const [clanInfo, setClanInfo] = useState<ClanInfo>({});
-  const [fund, setFund] = useState<Fund>({ isEnabled: false, balance: 0, currency: 'VND', purpose: '' });
   const [events, setEvents] = useState<ClanEvent[]>([]);
 
   // Event modal
@@ -95,9 +95,8 @@ export default function ClanPage(): JSX.Element | null {
 
   const fetchClanData = async () => {
     try {
-      const { data } = await API.get<{ clanInfo: ClanInfo; fund: Fund; events: ClanEvent[] }>('/clan');
+      const { data } = await API.get<{ clanInfo: ClanInfo; events: ClanEvent[] }>('/clan');
       setClanInfo(data.clanInfo || {});
-      setFund(data.fund || { isEnabled: false, balance: 0, currency: 'VND', purpose: '' });
       setEvents(data.events || []);
     } catch {
       toast.error('Lỗi khi tải dữ liệu dòng họ');
@@ -119,18 +118,6 @@ export default function ClanPage(): JSX.Element | null {
     }
   };
 
-  // ── Save fund ────────────────────────────────────────────────────────────────
-  const handleSaveFund = async () => {
-    setSaving(true);
-    try {
-      await API.put('/clan/fund', fund);
-      toast.success('Đã lưu thông tin quỹ');
-    } catch {
-      toast.error('Lỗi khi lưu quỹ');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   // ── Event CRUD ────────────────────────────────────────────────────────────────
   const openAddEvent = () => {
@@ -326,47 +313,7 @@ export default function ClanPage(): JSX.Element | null {
           <strong>💰 Quỹ dòng họ</strong>
         </Card.Header>
         <Card.Body>
-          <Form.Group className="mb-3">
-            <Form.Check
-              type="switch"
-              label="Bật quỹ dòng họ"
-              checked={fund.isEnabled || false}
-              onChange={(e) => setFund({ ...fund, isEnabled: e.target.checked })}
-            />
-          </Form.Group>
-          {fund.isEnabled && (
-            <Row className="g-3">
-              <Col xs={12} md={4}>
-                <InputGroup>
-                  <InputGroup.Text>Số dư</InputGroup.Text>
-                  <Form.Control
-                    type="number"
-                    min={0}
-                    value={fund.balance || 0}
-                    onChange={(e) => setFund({ ...fund, balance: Number(e.target.value) })}
-                  />
-                  <InputGroup.Text>{fund.currency || "VND"}</InputGroup.Text>
-                </InputGroup>
-              </Col>
-              <Col xs={12} md={8}>
-                <InputGroup>
-                  <InputGroup.Text>Mục đích</InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="VD: Học bổng, trùng tu mộ tổ..."
-                    value={fund.purpose || ""}
-                    onChange={(e) => setFund({ ...fund, purpose: e.target.value })}
-                  />
-                </InputGroup>
-              </Col>
-            </Row>
-          )}
-          <div className="mt-3">
-            <Button variant="primary" onClick={handleSaveFund} disabled={saving}>
-              <FontAwesomeIcon icon={faSave} className="me-1" />
-              {saving ? "Đang lưu..." : "Lưu thông tin quỹ"}
-            </Button>
-          </div>
+          <FundManager />
         </Card.Body>
       </Card>
 

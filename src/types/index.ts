@@ -159,6 +159,34 @@ export interface Fund {
   purpose?: string;
 }
 
+// ── Quỹ dòng họ (multi-fund) ──────────────────────────────────────────────────
+export interface ClanFund {
+  _id: string;
+  name: string;
+  targetAmount: number;
+  currency: string;
+  purpose?: string;
+  isEnabled: boolean;
+  incomeTotal: number;
+  expenseTotal: number;
+  balance: number;
+  createdAt: string;
+}
+
+export interface FundTransaction {
+  _id: string;
+  fund: string;
+  type: 'income' | 'expense';
+  amount: number;
+  date: string;
+  transactionCode?: string;
+  member?: { _id: string; name: string; avatar?: string } | null;
+  memberName?: string;
+  recipient?: string;
+  note?: string;
+  createdAt: string;
+}
+
 // ── Profile ───────────────────────────────────────────────────────────────────
 export interface UserProfile {
   _id: string;
