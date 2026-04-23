@@ -16,6 +16,7 @@ import Loading from '@/components/Loading';
 import { ClanInfo, ClanEvent, LunarDate } from '@/types';
 import VisibilitySettingsPanel from './VisibilitySettings';
 import FundManager from '@/components/FundManager';
+import UpcomingEventsWidget from '@/components/UpcomingEventsWidget';
 
 const EVENT_TYPES = ['giỗ tổ', 'họp họ', 'tảo mộ', 'khác'] as const;
 type EventType = typeof EVENT_TYPES[number];
@@ -198,6 +199,19 @@ export default function ClanPage(): JSX.Element | null {
         <FontAwesomeIcon icon={faPeopleGroup} className="me-2" />
         Quản Lý Dòng Họ
       </h2>
+
+      {/* ══════════════ SỰ KIỆN SẮP TỚI ══════════════ */}
+      <Card className="mb-4 border-0 shadow-sm">
+        <Card.Header className="bg-white border-bottom">
+          <strong>🗓️ Sự kiện sắp tới</strong>
+          <span className="text-muted ms-2" style={{ fontSize: '0.82rem' }}>
+            sinh nhật · ngày giỗ · sự kiện dòng họ
+          </span>
+        </Card.Header>
+        <Card.Body className="py-2">
+          <UpcomingEventsWidget />
+        </Card.Body>
+      </Card>
 
       {/* ══════════════ THÔNG TIN DÒNG HỌ ══════════════ */}
       <Card className="mb-4">

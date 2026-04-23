@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require("multer");
-const { getAllMembers, createMember, updateMember, deleteMember, getFamilyTree, getAllMembersFlat, generateViewCode, updateViewCode, getFamilyTreeByViewCode, getViewCode, uploadMemberAvatar, getTreeInfo, searchGlobal } = require('../controllers/memberController');
+const { getAllMembers, createMember, updateMember, deleteMember, getFamilyTree, getAllMembersFlat, generateViewCode, updateViewCode, getFamilyTreeByViewCode, getViewCode, uploadMemberAvatar, getTreeInfo, searchGlobal, getUpcomingEvents } = require('../controllers/memberController');
 const { burnIncense, offerItem, getMemberShrinePublic, getShrineLog, resetShrine } = require('../controllers/clanController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
@@ -16,6 +16,7 @@ router.get('/all', authMiddleware, getAllMembersFlat);
 router.post('/generate-view-code', authMiddleware, generateViewCode);
 router.get('/view-code', authMiddleware, getViewCode);
 router.get('/search-global', authMiddleware, searchGlobal);
+router.get('/upcoming-events', authMiddleware, getUpcomingEvents);
 router.post('/update-view-code', authMiddleware, updateViewCode);
 router.post('/upload-avatar', authMiddleware, upload.single('avatar'), uploadMemberAvatar);
 

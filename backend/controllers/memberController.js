@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 const { detectAndCreateMatches } = require('./crossTreeController');
+const { lunarDayMonthToSolarInYear } = require('../utils/lunarCalendar');
 
 const uploadMemberAvatar = async (req, res) => {
     let { _id } = req.body;
@@ -494,6 +495,106 @@ const searchGlobal = async (req, res) => {
     }
 };
 
+// ── Sự kiện sắp tới ──────────────────────────────────────────────────────────
+const getUpcomingEvents = async (req, res) => {
+    try {
+        const User = require('../models/User');
+        const members = await Member.find({ createdBy: req.user._id })
+            .select('name isAlive birthday deathDate anniversaryDate shrine viewCode')
+            .lean();
+        const user = await User.findById(req.user._id).select('events').lean();
+        const clanEvents = user?.events || [];
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const todayY = now.getFullYear();
+        const todayM = now.getMonth() + 1; // 1-12
+        const todayD = now.getDate();
+
+        // Ngày cuối tuần (7 ngày tới) và cuối tháng
+        const weekEnd  = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
+        const monthEnd = new Date(todayY, todayM, 0); // ngày cuối tháng hiện tại
+
+        const events = [];
+
+        // ── Thành viên ──────────────────────────────────────────────────────────
+        for (const m of members) {
+            const pick = { _id: m._id, name: m.name, isAlive: m.isAlive, viewCode: m.viewCode };
+
+            // Sinh nhật (solar): cần đủ ngày/tháng/năm
+            if (m.isAlive !== false && m.birthday?.solar) {
+                const bd = new Date(m.birthday.solar);
+                if (!isNaN(bd.getTime())) {
+                    const bdMonth = bd.getMonth() + 1;
+                    const bdDay   = bd.getDate();
+                    if (bdMonth && bdDay) {
+                        const thisYearBd = new Date(todayY, bdMonth - 1, bdDay);
+                        events.push({
+                            type:   'birthday',
+                            member: pick,
+                            date:   thisYearBd,
+                            label:  `Sinh nhật ${m.name}`,
+                        });
+                    }
+                }
+            }
+
+            // Ngày giỗ (âm lịch) – anniversaryDate.lunar.day + month
+            if (m.isAlive === false) {
+                const ann = m.anniversaryDate?.lunar;
+                if (ann?.day && ann?.month) {
+                    const solar = lunarDayMonthToSolarInYear(ann.day, ann.month, todayY);
+                    if (solar) {
+                        events.push({
+                            type:     'anniversary',
+                            member:   pick,
+                            date:     solar,
+                            label:    `Giỗ ${m.name}`,
+                            lunarDay: ann.day,
+                            lunarMonth: ann.month,
+                        });
+                    }
+                }
+            }
+        }
+
+        // ── Sự kiện dòng họ ────────────────────────────────────────────────────
+        for (const ev of clanEvents) {
+            // Dùng ngày dương nếu có, ưu tiên date trước lunarDate
+            if (ev.date) {
+                const d = new Date(ev.date);
+                if (!isNaN(d.getTime())) {
+                    // Sự kiện hàng năm: dùng tháng/ngày của năm này
+                    const recurring = new Date(todayY, d.getMonth(), d.getDate());
+                    events.push({ type: 'clan', label: ev.title, date: recurring, eventType: ev.type });
+                }
+            }
+        }
+
+        // ── Phân loại ──────────────────────────────────────────────────────────
+        function inRange(d, from, to) {
+            const t = new Date(d); t.setHours(0,0,0,0);
+            return t >= from && t <= to;
+        }
+
+        const isToday    = (d) => { const t = new Date(d); t.setHours(0,0,0,0); return t.getTime() === now.getTime(); };
+        const isThisWeek = (d) => inRange(d, now, weekEnd);
+        const isThisMonth= (d) => { const t = new Date(d); return t.getFullYear() === todayY && t.getMonth() + 1 === todayM; };
+
+        const sortByDate = (arr) => arr.slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        const serialize = (e) => ({ ...e, date: e.date instanceof Date ? e.date.toISOString().slice(0,10) : e.date });
+
+        res.json({
+            today:     sortByDate(events.filter(e => isToday(e.date))).map(serialize),
+            thisWeek:  sortByDate(events.filter(e => isThisWeek(e.date) && !isToday(e.date))).map(serialize),
+            thisMonth: sortByDate(events.filter(e => isThisMonth(e.date) && !isThisWeek(e.date))).map(serialize),
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy sự kiện', error });
+    }
+};
+
 module.exports = {
     getFamilyTree,
     getAllMembers,
@@ -508,4 +609,5 @@ module.exports = {
     uploadMemberAvatar,
     getTreeInfo,
     searchGlobal,
+    getUpcomingEvents,
 };
