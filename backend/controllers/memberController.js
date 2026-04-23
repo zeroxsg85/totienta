@@ -539,19 +539,49 @@ const getUpcomingEvents = async (req, res) => {
                 }
             }
 
-            // Ngày giỗ (âm lịch) – anniversaryDate.lunar.day + month
+            // Ngày giỗ – ưu tiên: anniversaryDate.lunar → deathDate.solar → deathDate.lunar
             if (m.isAlive === false) {
                 const ann = m.anniversaryDate?.lunar;
                 if (ann?.day && ann?.month) {
+                    // 1) Có ngày giỗ âm lịch riêng → chuyển sang dương
                     const solar = lunarDayMonthToSolarInYear(ann.day, ann.month, todayY);
                     if (solar) {
                         events.push({
-                            type:     'anniversary',
-                            member:   pick,
-                            date:     solar,
-                            label:    `Giỗ ${m.name}`,
-                            lunarDay: ann.day,
+                            type:       'anniversary',
+                            member:     pick,
+                            date:       solar,
+                            label:      `Giỗ ${m.name}`,
+                            lunarDay:   ann.day,
                             lunarMonth: ann.month,
+                        });
+                    }
+                } else if (m.deathDate?.solar) {
+                    // 2) Có ngày mất dương lịch → dùng ngày/tháng đó hàng năm
+                    const dd = new Date(m.deathDate.solar);
+                    if (!isNaN(dd.getTime())) {
+                        const ddMonth = dd.getMonth() + 1;
+                        const ddDay   = dd.getDate();
+                        if (ddMonth && ddDay) {
+                            events.push({
+                                type:   'anniversary',
+                                member: pick,
+                                date:   new Date(todayY, ddMonth - 1, ddDay),
+                                label:  `Giỗ ${m.name}`,
+                            });
+                        }
+                    }
+                } else if (m.deathDate?.lunar?.day && m.deathDate?.lunar?.month) {
+                    // 3) Có ngày mất âm lịch → chuyển sang dương
+                    const dl = m.deathDate.lunar;
+                    const solar = lunarDayMonthToSolarInYear(dl.day, dl.month, todayY);
+                    if (solar) {
+                        events.push({
+                            type:       'anniversary',
+                            member:     pick,
+                            date:       solar,
+                            label:      `Giỗ ${m.name}`,
+                            lunarDay:   dl.day,
+                            lunarMonth: dl.month,
                         });
                     }
                 }
