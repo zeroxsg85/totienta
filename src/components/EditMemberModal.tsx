@@ -39,7 +39,8 @@ export default function EditMemberModal({
   const [showChildrenModal, setShowChildrenModal] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const [resetting, setResetting] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingAlbum, setUploadingAlbum] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState<{ id: string; file: File; previewUrl: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -157,15 +158,36 @@ export default function EditMemberModal({
   const handleRemovePhoto = (idx: number) =>
     setMemorial({ photos: (editMember?.memorial?.photos || []).filter((_, i) => i !== idx) });
 
-  // ── Album ảnh (customFields type=image) ──────────────────────────────────────
-  const handleAlbumFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Album ảnh ─────────────────────────────────────────────────────────────────
+  // Bước 1: chọn file → preview local, chưa upload
+  const handleAlbumFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (!files.length || !editMember?._id) return;
-    setUploadingPhoto(true);
+    if (!files.length) return;
+    const newStaged = files.map(file => ({
+      id: Math.random().toString(36).slice(2),
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setStagedFiles(prev => [...prev, ...newStaged]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Loại bỏ khỏi staging (trước khi upload)
+  const removeStaged = (id: string) => {
+    setStagedFiles(prev => {
+      const item = prev.find(f => f.id === id);
+      if (item) URL.revokeObjectURL(item.previewUrl);
+      return prev.filter(f => f.id !== id);
+    });
+  };
+
+  // Bước 2: xác nhận → upload tất cả staged
+  const handleUploadStaged = async () => {
+    if (!stagedFiles.length || !editMember?._id) return;
+    setUploadingAlbum(true);
     try {
-      // Upload tuần tự để tránh race condition trên server
       let latestFields: CustomField[] = editMember.customFields || [];
-      for (const file of files) {
+      for (const { file } of stagedFiles) {
         const fd = new FormData();
         fd.append('photo', file);
         const { data } = await API.post<{ customFields: CustomField[] }>(
@@ -175,23 +197,25 @@ export default function EditMemberModal({
         latestFields = data.customFields;
       }
       set({ customFields: latestFields });
-      toast.success(`Đã thêm ${files.length} ảnh vào album`);
+      stagedFiles.forEach(f => URL.revokeObjectURL(f.previewUrl));
+      setStagedFiles([]);
+      toast.success(`Đã tải lên ${stagedFiles.length} ảnh`);
     } catch {
-      toast.error('Có ảnh không thể upload được');
+      toast.error('Có ảnh không thể tải lên');
     } finally {
-      setUploadingPhoto(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setUploadingAlbum(false);
     }
   };
 
+  // Sửa mô tả (lưu khi submit form)
   const handleAlbumCaption = (globalIdx: number, label: string) => {
     const fields = (editMember?.customFields || []).map((f, i) => i === globalIdx ? { ...f, label } : f);
     set({ customFields: fields });
   };
 
+  // Xóa ảnh đã upload
   const handleRemoveAlbum = async (globalIdx: number) => {
-    if (!editMember?._id) return;
-    if (!confirm('Xóa ảnh này?')) return;
+    if (!editMember?._id || !confirm('Xóa ảnh này?')) return;
     try {
       const { data } = await API.delete<{ customFields: CustomField[] }>(
         `/members/${editMember._id}/album/${globalIdx}`
@@ -659,87 +683,98 @@ export default function EditMemberModal({
                 </Tab.Pane>
                 {/* ══════════════════════ TAB ALBUM ẢNH ══════════════════════ */}
                 <Tab.Pane eventKey="album">
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={handleAlbumFileChange}
-                  />
+                  <input ref={fileInputRef} type="file" accept="image/*" multiple
+                    style={{ display: 'none' }} onChange={handleAlbumFileSelect} />
 
                   {(() => {
+                    const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
                     const albumEntries = (editMember.customFields || [])
                       .map((f, idx) => ({ ...f, _idx: idx }))
                       .filter(f => f.type === 'image');
 
-                    const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
-
                     return (
-                      <>
-                        {albumEntries.length === 0 && !uploadingPhoto && (
+                      <div>
+                        {/* ── BƯỚC 1: Ảnh đang chờ upload ── */}
+                        {stagedFiles.length > 0 && (
+                          <div className="mb-4 p-3 rounded" style={{ background: '#fffbeb', border: '1px solid #fcd34d' }}>
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                              <strong style={{ fontSize: '0.9rem' }}>
+                                📋 {stagedFiles.length} ảnh chờ tải lên — xem lại trước khi xác nhận
+                              </strong>
+                              <div className="d-flex gap-2">
+                                <Button size="sm" variant="outline-secondary"
+                                  onClick={() => { stagedFiles.forEach(f => URL.revokeObjectURL(f.previewUrl)); setStagedFiles([]); }}>
+                                  Bỏ tất cả
+                                </Button>
+                                <Button size="sm" variant="primary" disabled={uploadingAlbum} onClick={handleUploadStaged}>
+                                  {uploadingAlbum ? <><Spinner animation="border" size="sm" className="me-1" />Đang tải...</> : `⬆️ Tải lên ${stagedFiles.length} ảnh`}
+                                </Button>
+                              </div>
+                            </div>
+                            <Row className="g-2">
+                              {stagedFiles.map(f => (
+                                <Col xs={6} sm={4} md={3} key={f.id}>
+                                  <div className="position-relative rounded overflow-hidden" style={{ aspectRatio: '1' }}>
+                                    <img src={f.previewUrl} alt=""
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <button type="button"
+                                      onClick={() => removeStaged(f.id)}
+                                      style={{
+                                        position: 'absolute', top: 4, right: 4,
+                                        background: 'rgba(0,0,0,0.6)', color: '#fff',
+                                        border: 'none', borderRadius: '50%',
+                                        width: 24, height: 24, cursor: 'pointer',
+                                        fontSize: '0.75rem', lineHeight: 1,
+                                      }}>✕</button>
+                                  </div>
+                                </Col>
+                              ))}
+                            </Row>
+                          </div>
+                        )}
+
+                        {/* ── BƯỚC 2: Album đã upload ── */}
+                        {albumEntries.length > 0 && (
+                          <Row className="g-3 mb-3">
+                            {albumEntries.map(photo => (
+                              <Col xs={6} sm={4} md={3} key={photo._idx}>
+                                <div className="position-relative rounded overflow-hidden" style={{ aspectRatio: '1' }}>
+                                  <img src={`${API_BASE}/${photo.value}`} alt={photo.label || ''}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+                                  />
+                                  <button type="button" onClick={() => handleRemoveAlbum(photo._idx)}
+                                    style={{
+                                      position: 'absolute', top: 4, right: 4,
+                                      background: 'rgba(220,53,69,0.85)', color: '#fff',
+                                      border: 'none', borderRadius: '50%',
+                                      width: 24, height: 24, cursor: 'pointer',
+                                      fontSize: '0.75rem', lineHeight: 1,
+                                    }}>✕</button>
+                                </div>
+                                <Form.Control size="sm" type="text" className="mt-1"
+                                  placeholder="Mô tả ảnh..."
+                                  value={photo.label}
+                                  onChange={(e) => handleAlbumCaption(photo._idx, e.target.value)}
+                                />
+                              </Col>
+                            ))}
+                          </Row>
+                        )}
+
+                        {albumEntries.length === 0 && stagedFiles.length === 0 && (
                           <p className="text-muted text-center py-4">Chưa có ảnh nào trong album.</p>
                         )}
 
-                        <Row className="g-3 mb-3">
-                          {albumEntries.map((photo) => (
-                            <Col xs={6} md={4} key={photo._idx}>
-                              <div className="border rounded overflow-hidden position-relative" style={{ aspectRatio: '1' }}>
-                                <img
-                                  src={`${API_BASE}/${photo.value}`}
-                                  alt={photo.label || ''}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
-                                />
-                                {/* Overlay xóa */}
-                                <Button
-                                  size="sm"
-                                  variant="danger"
-                                  className="position-absolute top-0 end-0 m-1 py-0 px-1"
-                                  style={{ fontSize: '0.7rem', opacity: 0.85 }}
-                                  onClick={() => handleRemoveAlbum(photo._idx)}
-                                >
-                                  ✕
-                                </Button>
-                              </div>
-                              {/* Chú thích — lưu khi submit form */}
-                              <Form.Control
-                                size="sm"
-                                type="text"
-                                className="mt-1"
-                                placeholder="Chú thích..."
-                                value={photo.label}
-                                onChange={(e) => handleAlbumCaption(photo._idx, e.target.value)}
-                              />
-                            </Col>
-                          ))}
-
-                          {/* Ô upload mới */}
-                          <Col xs={6} md={4}>
-                            <button
-                              type="button"
-                              disabled={uploadingPhoto}
-                              onClick={() => fileInputRef.current?.click()}
-                              className="w-100 border rounded d-flex flex-column align-items-center justify-content-center text-muted"
-                              style={{
-                                aspectRatio: '1', background: '#f8f9fa',
-                                border: '2px dashed #dee2e6', cursor: 'pointer',
-                                fontSize: '0.85rem', gap: 6,
-                              }}
-                            >
-                              {uploadingPhoto
-                                ? <Spinner animation="border" size="sm" />
-                                : <><span style={{ fontSize: '1.8rem' }}>📷</span>Thêm ảnh</>
-                              }
-                            </button>
-                          </Col>
-                        </Row>
-
-                        <p className="text-muted small mb-0">
-                          Chú thích được lưu khi bấm <strong>Cập Nhật</strong>. Xóa ảnh có hiệu lực ngay.
+                        {/* Nút thêm ảnh */}
+                        <Button variant="outline-primary" size="sm"
+                          onClick={() => fileInputRef.current?.click()}>
+                          📷 Chọn ảnh từ thiết bị
+                        </Button>
+                        <p className="text-muted small mt-2 mb-0">
+                          Mô tả được lưu khi bấm <strong>Cập Nhật</strong>. Tải lên & xóa có hiệu lực ngay.
                         </p>
-                      </>
+                      </div>
                     );
                   })()}
                 </Tab.Pane>
