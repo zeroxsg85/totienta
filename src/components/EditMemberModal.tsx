@@ -159,20 +159,25 @@ export default function EditMemberModal({
 
   // ── Album ảnh (customFields type=image) ──────────────────────────────────────
   const handleAlbumFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !editMember?._id) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !editMember?._id) return;
     setUploadingPhoto(true);
     try {
-      const fd = new FormData();
-      fd.append('photo', file);
-      const { data } = await API.post<{ customFields: CustomField[] }>(
-        `/members/${editMember._id}/album/upload`, fd,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      set({ customFields: data.customFields });
-      toast.success('Đã thêm ảnh vào album');
+      // Upload tuần tự để tránh race condition trên server
+      let latestFields: CustomField[] = editMember.customFields || [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('photo', file);
+        const { data } = await API.post<{ customFields: CustomField[] }>(
+          `/members/${editMember._id}/album/upload`, fd,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        latestFields = data.customFields;
+      }
+      set({ customFields: latestFields });
+      toast.success(`Đã thêm ${files.length} ảnh vào album`);
     } catch {
-      toast.error('Không thể upload ảnh');
+      toast.error('Có ảnh không thể upload được');
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -659,6 +664,7 @@ export default function EditMemberModal({
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     style={{ display: 'none' }}
                     onChange={handleAlbumFileChange}
                   />
