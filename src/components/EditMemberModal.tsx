@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
-import { Modal, Button, Form, InputGroup, Row, Col, Nav, Tab } from 'react-bootstrap';
+import { useState, useEffect, useRef, FormEvent } from 'react';
+import { Modal, Button, Form, InputGroup, Row, Col, Nav, Tab, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencilAlt, faUsers, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
-import { Member, Spouse, Memorial, Burial, Shrine, Legacy, LegacyMessage } from '@/types';
+import { Member, Spouse, Memorial, Burial, Shrine, Legacy, LegacyMessage, CustomField } from '@/types';
 import { PRESET_OFFERINGS } from './ShrineModal';
 import MemberBasicFields, { BasicMemberData } from './MemberBasicFields';
 import API from '@/lib/api';
@@ -39,6 +39,8 @@ export default function EditMemberModal({
   const [showChildrenModal, setShowChildrenModal] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('basic');
   const [resetting, setResetting] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (member) {
@@ -155,6 +157,47 @@ export default function EditMemberModal({
   const handleRemovePhoto = (idx: number) =>
     setMemorial({ photos: (editMember?.memorial?.photos || []).filter((_, i) => i !== idx) });
 
+  // ── Album ảnh (customFields type=image) ──────────────────────────────────────
+  const handleAlbumFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editMember?._id) return;
+    setUploadingPhoto(true);
+    try {
+      const fd = new FormData();
+      fd.append('photo', file);
+      const { data } = await API.post<{ customFields: CustomField[] }>(
+        `/members/${editMember._id}/album/upload`, fd,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      set({ customFields: data.customFields });
+      toast.success('Đã thêm ảnh vào album');
+    } catch {
+      toast.error('Không thể upload ảnh');
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAlbumCaption = (globalIdx: number, label: string) => {
+    const fields = (editMember?.customFields || []).map((f, i) => i === globalIdx ? { ...f, label } : f);
+    set({ customFields: fields });
+  };
+
+  const handleRemoveAlbum = async (globalIdx: number) => {
+    if (!editMember?._id) return;
+    if (!confirm('Xóa ảnh này?')) return;
+    try {
+      const { data } = await API.delete<{ customFields: CustomField[] }>(
+        `/members/${editMember._id}/album/${globalIdx}`
+      );
+      set({ customFields: data.customFields });
+      toast.success('Đã xóa ảnh');
+    } catch {
+      toast.error('Không thể xóa ảnh');
+    }
+  };
+
   // ── Parent/children options ───────────────────────────────────────────────────
   const parentOptions = allMembers
     .filter((m) => m._id !== editMember?._id)
@@ -178,12 +221,26 @@ export default function EditMemberModal({
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'basic')}>
-              <Nav variant="tabs" className="mb-3">
-                <Nav.Item><Nav.Link eventKey="basic">Cơ bản</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link eventKey="memorial">Tưởng niệm</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link eventKey="burial">Phần mộ</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link eventKey="shrine">Bàn thờ số</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link eventKey="legacy">Di chúc</Nav.Link></Nav.Item>
+              <Nav variant="tabs" className="mb-3" style={{ flexWrap: 'wrap' }}>
+                {[
+                  { key: 'basic',    icon: '👤', label: 'Cơ bản' },
+                  { key: 'album',    icon: '🖼️', label: 'Album ảnh' },
+                  { key: 'memorial', icon: '🌸', label: 'Tưởng niệm' },
+                  { key: 'burial',   icon: '📍', label: 'Phần mộ',    disabled: editMember?.isAlive === true },
+                  { key: 'shrine',   icon: '🕯️', label: 'Bàn thờ số', disabled: editMember?.isAlive === true },
+                  { key: 'legacy',   icon: '📜', label: 'Di chúc' },
+                ].map(({ key, icon, label, disabled }) => (
+                  <Nav.Item key={key}>
+                    <Nav.Link
+                      eventKey={key}
+                      disabled={disabled}
+                      className={activeTab === key ? 'fw-bold' : ''}
+                      title={disabled ? 'Chỉ dành cho thành viên đã mất' : undefined}
+                    >
+                      {icon} {label}
+                    </Nav.Link>
+                  </Nav.Item>
+                ))}
               </Nav>
 
               <Tab.Content>
@@ -595,6 +652,92 @@ export default function EditMemberModal({
                     </Button>
                   </Form.Group>
                 </Tab.Pane>
+                {/* ══════════════════════ TAB ALBUM ẢNH ══════════════════════ */}
+                <Tab.Pane eventKey="album">
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleAlbumFileChange}
+                  />
+
+                  {(() => {
+                    const albumEntries = (editMember.customFields || [])
+                      .map((f, idx) => ({ ...f, _idx: idx }))
+                      .filter(f => f.type === 'image');
+
+                    const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
+
+                    return (
+                      <>
+                        {albumEntries.length === 0 && !uploadingPhoto && (
+                          <p className="text-muted text-center py-4">Chưa có ảnh nào trong album.</p>
+                        )}
+
+                        <Row className="g-3 mb-3">
+                          {albumEntries.map((photo) => (
+                            <Col xs={6} md={4} key={photo._idx}>
+                              <div className="border rounded overflow-hidden position-relative" style={{ aspectRatio: '1' }}>
+                                <img
+                                  src={`${API_BASE}/${photo.value}`}
+                                  alt={photo.label || ''}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
+                                />
+                                {/* Overlay xóa */}
+                                <Button
+                                  size="sm"
+                                  variant="danger"
+                                  className="position-absolute top-0 end-0 m-1 py-0 px-1"
+                                  style={{ fontSize: '0.7rem', opacity: 0.85 }}
+                                  onClick={() => handleRemoveAlbum(photo._idx)}
+                                >
+                                  ✕
+                                </Button>
+                              </div>
+                              {/* Chú thích — lưu khi submit form */}
+                              <Form.Control
+                                size="sm"
+                                type="text"
+                                className="mt-1"
+                                placeholder="Chú thích..."
+                                value={photo.label}
+                                onChange={(e) => handleAlbumCaption(photo._idx, e.target.value)}
+                              />
+                            </Col>
+                          ))}
+
+                          {/* Ô upload mới */}
+                          <Col xs={6} md={4}>
+                            <button
+                              type="button"
+                              disabled={uploadingPhoto}
+                              onClick={() => fileInputRef.current?.click()}
+                              className="w-100 border rounded d-flex flex-column align-items-center justify-content-center text-muted"
+                              style={{
+                                aspectRatio: '1', background: '#f8f9fa',
+                                border: '2px dashed #dee2e6', cursor: 'pointer',
+                                fontSize: '0.85rem', gap: 6,
+                              }}
+                            >
+                              {uploadingPhoto
+                                ? <Spinner animation="border" size="sm" />
+                                : <><span style={{ fontSize: '1.8rem' }}>📷</span>Thêm ảnh</>
+                              }
+                            </button>
+                          </Col>
+                        </Row>
+
+                        <p className="text-muted small mb-0">
+                          Chú thích được lưu khi bấm <strong>Cập Nhật</strong>. Xóa ảnh có hiệu lực ngay.
+                        </p>
+                      </>
+                    );
+                  })()}
+                </Tab.Pane>
+
               </Tab.Content>
             </Tab.Container>
 

@@ -74,6 +74,63 @@ const uploadMemberAvatar = async (req, res) => {
     }
 };
 
+// ── Album ảnh ──────────────────────────────────────────────────────────────────
+const uploadAlbumPhoto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!req.file) return res.status(400).json({ message: 'Không có file' });
+
+        const member = await Member.findOne({ _id: id, createdBy: req.user._id });
+        if (!member) return res.status(404).json({ message: 'Không tìm thấy thành viên' });
+
+        const userId = req.user._id.toString();
+        const albumDir = path.join(__dirname, `../../uploads/albums/${userId}/${id}`);
+        if (!fs.existsSync(albumDir)) fs.mkdirSync(albumDir, { recursive: true });
+
+        const fileName = `photo-${Date.now()}.jpg`;
+        const buffer = await sharp(req.file.buffer)
+            .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 85 })
+            .toBuffer();
+
+        fs.writeFileSync(path.join(albumDir, fileName), buffer);
+
+        const photoPath = `uploads/albums/${userId}/${id}/${fileName}`;
+        if (!member.customFields) member.customFields = [];
+        member.customFields.push({ label: '', type: 'image', value: photoPath });
+        await member.save();
+
+        res.json({ customFields: member.customFields });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi upload ảnh album', error });
+    }
+};
+
+const deleteAlbumPhoto = async (req, res) => {
+    try {
+        const { id, fieldIdx } = req.params;
+        const idx = parseInt(fieldIdx, 10);
+
+        const member = await Member.findOne({ _id: id, createdBy: req.user._id });
+        if (!member) return res.status(404).json({ message: 'Không tìm thấy thành viên' });
+
+        const field = member.customFields?.[idx];
+        if (!field || field.type !== 'image') return res.status(404).json({ message: 'Không tìm thấy ảnh' });
+
+        if (field.value) {
+            const filePath = path.join(__dirname, `../../${field.value}`);
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        }
+
+        member.customFields.splice(idx, 1);
+        await member.save();
+
+        res.json({ customFields: member.customFields });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi xóa ảnh album', error });
+    }
+};
+
 // Tạo hoặc cập nhật mã xác thực
 const generateViewCode = async (req, res) => {
     try {
@@ -644,6 +701,8 @@ module.exports = {
     getViewCode,
     updateViewCode,
     uploadMemberAvatar,
+    uploadAlbumPhoto,
+    deleteAlbumPhoto,
     getTreeInfo,
     searchGlobal,
     getUpcomingEvents,
