@@ -90,53 +90,49 @@ export default function Navbar(): JSX.Element {
 
         {/* Brand - căn giữa trên mobile */}
         <Link href="/" className="navbar-brand" onClick={closeMenu}>
-          {!isMobile && (
-            <Image src="/totienta.logo.png" alt="Logo" width={36} height={36} />
-          )}
+          {!isMobile && <Image src="/totienta.logo.png" alt="Logo" width={36} height={36} />}
           <span className="brand-text">ToTienTa.com</span>
         </Link>
 
         {/* Toggle button */}
-        <button
-          className="navbar-toggler"
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle navigation"
-        >
+        <button className="navbar-toggler" type="button" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
 
         {/* Menu */}
-        <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`}>
+        <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}>
           <ul className="navbar-nav">
             {isAuthenticated ? (
               <>
-                <li className={`nav-item ${pathname === '/members' ? 'active' : ''}`}>
+                <li className={`nav-item ${pathname === "/members" ? "active" : ""}`}>
                   <Link className="nav-link" href="/members" onClick={closeMenu}>
                     🌳 Cây Của Bạn
                   </Link>
                 </li>
-                <li className={`nav-item ${pathname === '/suggestions' ? 'active' : ''}`}>
+                <li className={`nav-item ${pathname === "/suggestions" ? "active" : ""}`}>
                   <Link className="nav-link position-relative" href="/suggestions" onClick={closeMenu}>
                     💡 Đề xuất
-                    {pendingCount > 0 && (
-                      <span className="notification-badge">{pendingCount > 9 ? '9+' : pendingCount}</span>
-                    )}
+                    {pendingCount > 0 && <span className="notification-badge">{pendingCount > 9 ? "9+" : pendingCount}</span>}
                   </Link>
                 </li>
-                <li className={`nav-item ${pathname === '/matches' ? 'active' : ''}`}>
+                <li className={`nav-item ${pathname === "/matches" ? "active" : ""}`}>
                   <Link className="nav-link position-relative" href="/matches" onClick={closeMenu}>
                     🔗 Kết nối
                     {matchCount > 0 && (
-                      <span className="notification-badge" style={{ backgroundColor: '#198754' }}>
-                        {matchCount > 9 ? '9+' : matchCount}
+                      <span className="notification-badge" style={{ backgroundColor: "#198754" }}>
+                        {matchCount > 9 ? "9+" : matchCount}
                       </span>
                     )}
                   </Link>
                 </li>
-                <li className={`nav-item ${pathname === '/clan' ? 'active' : ''}`}>
+                <li className={`nav-item ${pathname === "/clan" ? "active" : ""}`}>
                   <Link className="nav-link" href="/clan" onClick={closeMenu}>
                     🏛️ Dòng Họ
+                  </Link>
+                </li>
+                <li className={`nav-item ${pathname === "/clan" ? "active" : ""}`}>
+                  <Link className="nav-link" href="https://totienta.com" onClick={closeMenu}>
+                    📖 Blog
                   </Link>
                 </li>
               </>
@@ -150,12 +146,19 @@ export default function Navbar(): JSX.Element {
                     </Link>
                   </li>
                 )}
-                {section !== 'clan' && (
-                  <li className="nav-item">
-                    <Link className="nav-link" href={`/${viewCode}/clan`} onClick={closeMenu}>
-                      🏛️ Dòng Họ
-                    </Link>
-                  </li>
+                {section !== "clan" && (
+                  <>
+                    <li className="nav-item">
+                      <Link className="nav-link" href={`/${viewCode}/clan`} onClick={closeMenu}>
+                        🏛️ Dòng Họ
+                      </Link>
+                    </li>
+                    <li className={`nav-item ${pathname === "/clan" ? "active" : ""}`}>
+                      <Link className="nav-link" href="https://totienta.com" onClick={closeMenu}>
+                        📖 Blog
+                      </Link>
+                    </li>
+                  </>
                 )}
               </>
             ) : null}
@@ -164,7 +167,7 @@ export default function Navbar(): JSX.Element {
           <ul className="navbar-nav ms-auto">
             {isAuthenticated ? (
               <>
-                <li className={`nav-item ${pathname === '/profile' ? 'active' : ''}`}>
+                <li className={`nav-item ${pathname === "/profile" ? "active" : ""}`}>
                   <Link className="nav-link" href="/profile" onClick={closeMenu}>
                     <FontAwesomeIcon icon={faUser} /> Tài khoản
                   </Link>
@@ -176,7 +179,7 @@ export default function Navbar(): JSX.Element {
                 </li>
               </>
             ) : (
-              <li className={`nav-item ${pathname === '/login' ? 'active' : ''}`}>
+              <li className={`nav-item ${pathname === "/login" ? "active" : ""}`}>
                 <Link className="nav-link" href="/login" onClick={closeMenu}>
                   <FontAwesomeIcon icon={faSignInAlt} /> Đăng Nhập
                 </Link>
