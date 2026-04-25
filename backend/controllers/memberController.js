@@ -290,6 +290,17 @@ const getAllMembers = async (req, res) => {
     }
 };
 
+const getMember = async (req, res) => {
+    try {
+        const member = await Member.findOne({ _id: req.params.id, createdBy: req.user._id })
+            .populate('parent spouse children');
+        if (!member) return res.status(404).json({ message: 'Không tìm thấy thành viên' });
+        res.json(member);
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy thành viên', error });
+    }
+};
+
 
 // Thêm thành viên mới (hỗ trợ thêm CHA/MẸ cho root)
 const createMember = async (req, res) => {
@@ -693,6 +704,7 @@ const getUpcomingEvents = async (req, res) => {
 module.exports = {
     getFamilyTree,
     getAllMembers,
+    getMember,
     createMember,
     updateMember,
     deleteMember,

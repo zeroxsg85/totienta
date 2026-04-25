@@ -33,6 +33,7 @@ export default function MemberCard({
   const [avatar, setAvatar] = useState<string>('');
   const [loadingAva, setLoadingAva] = useState<boolean>(false);
   const [showShrine, setShowShrine] = useState<boolean>(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const defaultAvatar =
     member?.gender === 'male'
@@ -342,20 +343,53 @@ export default function MemberCard({
             </div>
           )}
 
-          {/* Custom Fields */}
-          {member.customFields && member.customFields.length > 0 && (
+          {/* Custom Fields — text/number/date/boolean only */}
+          {member.customFields && member.customFields.some(f => f.type !== 'image') && (
             <div className="mt-3">
               <h5>📌 Thông tin bổ sung</h5>
-              {member.customFields.map((field, index) => (
-                <p key={index}>
-                  <strong>{field.label}:</strong>{' '}
-                  {field.type === 'date'
-                    ? new Date(field.value as string).toLocaleDateString()
-                    : String(field.value)}
-                </p>
-              ))}
+              {member.customFields
+                .filter(f => f.type !== 'image')
+                .map((field, index) => (
+                  <p key={index}>
+                    <strong>{field.label}:</strong>{' '}
+                    {field.type === 'date'
+                      ? new Date(field.value as string).toLocaleDateString('vi-VN')
+                      : String(field.value)}
+                  </p>
+                ))}
             </div>
           )}
+
+          {/* Album ảnh — thumbnails, bấm mở carousel */}
+          {(() => {
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
+            const albumPhotos = (member.customFields || []).filter(f => f.type === 'image');
+            if (!albumPhotos.length) return null;
+            return (
+              <div className="mt-3">
+                <h5>🖼️ Album ảnh</h5>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {albumPhotos.map((photo, i) => (
+                    <div
+                      key={i}
+                      onClick={() => setLightboxIndex(i)}
+                      style={{
+                        width: 72, height: 72, borderRadius: 8,
+                        overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
+                        border: '2px solid #dee2e6',
+                      }}
+                    >
+                      <img
+                        src={`${API_BASE}/${photo.value}`}
+                        alt={photo.label || `Ảnh ${i + 1}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </Modal.Body>
 
         <Modal.Footer className="d-flex justify-content-between align-items-center">
@@ -386,6 +420,110 @@ export default function MemberCard({
         member={member}
         baseUrl={baseUrl}
       />
+
+      {/* Lightbox carousel */}
+      {lightboxIndex !== null && (() => {
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5001';
+        const albumPhotos = (member.customFields || []).filter(f => f.type === 'image');
+        const total = albumPhotos.length;
+        const cur = albumPhotos[lightboxIndex];
+        const prev = () => setLightboxIndex((lightboxIndex - 1 + total) % total);
+        const next = () => setLightboxIndex((lightboxIndex + 1) % total);
+        const handleKey = (e: React.KeyboardEvent) => {
+          if (e.key === 'ArrowLeft') prev();
+          if (e.key === 'ArrowRight') next();
+          if (e.key === 'Escape') setLightboxIndex(null);
+        };
+        return (
+          <div
+            onKeyDown={handleKey}
+            tabIndex={0}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 9999,
+              background: 'rgba(0,0,0,0.92)',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+            onClick={() => setLightboxIndex(null)}
+          >
+            {/* Close */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+              style={{
+                position: 'absolute', top: 16, right: 20,
+                background: 'none', border: 'none', color: '#fff',
+                fontSize: '2rem', lineHeight: 1, cursor: 'pointer', zIndex: 1,
+              }}
+            >✕</button>
+
+            {/* Prev */}
+            {total > 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); prev(); }}
+                style={{
+                  position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+                  fontSize: '1.8rem', borderRadius: 8, padding: '8px 14px', cursor: 'pointer',
+                }}
+              >‹</button>
+            )}
+
+            {/* Image */}
+            <img
+              src={`${API_BASE}/${cur.value}`}
+              alt={cur.label || ''}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: '90vw', maxHeight: '80vh',
+                objectFit: 'contain', borderRadius: 8,
+                boxShadow: '0 4px 32px rgba(0,0,0,0.6)',
+              }}
+            />
+
+            {/* Caption + counter */}
+            <div style={{ color: '#ddd', marginTop: 12, textAlign: 'center', fontSize: '0.9rem' }}>
+              {cur.label && <div>{cur.label}</div>}
+              <div style={{ color: '#888', fontSize: '0.8rem' }}>{lightboxIndex + 1} / {total}</div>
+            </div>
+
+            {/* Next */}
+            {total > 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); next(); }}
+                style={{
+                  position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+                  fontSize: '1.8rem', borderRadius: 8, padding: '8px 14px', cursor: 'pointer',
+                }}
+              >›</button>
+            )}
+
+            {/* Thumbnail strip */}
+            {total > 1 && (
+              <div style={{
+                position: 'absolute', bottom: 16,
+                display: 'flex', gap: 8, overflowX: 'auto', maxWidth: '90vw', padding: '0 8px',
+              }}>
+                {albumPhotos.map((p, i) => (
+                  <div
+                    key={i}
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                    style={{
+                      width: 52, height: 52, borderRadius: 6, overflow: 'hidden', flexShrink: 0,
+                      cursor: 'pointer', opacity: i === lightboxIndex ? 1 : 0.5,
+                      border: i === lightboxIndex ? '2px solid #fff' : '2px solid transparent',
+                      transition: 'opacity 0.2s',
+                    }}
+                  >
+                    <img src={`${API_BASE}/${p.value}`} alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </>
   );
 }

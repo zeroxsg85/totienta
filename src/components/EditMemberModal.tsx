@@ -43,6 +43,19 @@ export default function EditMemberModal({
   const [stagedFiles, setStagedFiles] = useState<{ id: string; file: File; previewUrl: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Khi chuyển sang tab Album, fetch lại customFields để hiện ảnh mới nhất
+  useEffect(() => {
+    if (activeTab !== 'album' || !editMember?._id) return;
+    API.get<Member>(`/members/${editMember._id}`)
+      .then(({ data }) => {
+        if (data?.customFields) {
+          set({ customFields: data.customFields });
+        }
+      })
+      .catch(() => {/* silent */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
   useEffect(() => {
     if (member) {
       setActiveTab('basic');
