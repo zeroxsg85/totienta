@@ -130,7 +130,7 @@ export default function Navbar(): JSX.Element {
                     🏛️ Dòng Họ
                   </Link>
                 </li>
-                <li className={`nav-item ${pathname === "/clan" ? "active" : ""}`}>
+                <li className={`nav-item ${pathname === "/https://totienta.com" ? "active" : ""}`}>
                   <Link className="nav-link" href="https://totienta.com" onClick={closeMenu}>
                     📖 Blog
                   </Link>
@@ -153,7 +153,7 @@ export default function Navbar(): JSX.Element {
                         🏛️ Dòng Họ
                       </Link>
                     </li>
-                    <li className={`nav-item ${pathname === "/clan" ? "active" : ""}`}>
+                    <li className={`nav-item ${pathname === "https://totienta.com" ? "active" : ""}`}>
                       <Link className="nav-link" href="https://totienta.com" onClick={closeMenu}>
                         📖 Blog
                       </Link>
