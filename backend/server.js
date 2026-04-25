@@ -13,7 +13,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
 // Phục vụ file tĩnh từ thư mục uploads
-const UPLOAD_DIR = path.join(__dirname, '../uploads');
+const UPLOAD_DIR = path.join(__dirname, '../../uploads');
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 // Routes

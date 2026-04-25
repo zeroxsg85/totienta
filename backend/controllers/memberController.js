@@ -34,14 +34,14 @@ const uploadMemberAvatar = async (req, res) => {
         const userId = member.createdBy.toString(); // Lấy ID người tạo
 
         // 📌 Xác định thư mục lưu ảnh
-        const memberDir = path.join(__dirname, `../../uploads/avatars/${userId}/${_id}`);
+        const memberDir = path.join(__dirname, `../../../uploads/totienta/avatars/${userId}/${_id}`);
         if (!fs.existsSync(memberDir)) {
             fs.mkdirSync(memberDir, { recursive: true });
         }
 
         // 📌 Xóa ảnh cũ nếu có
         if (member.avatar) {
-            const oldAvatarPath = path.join(__dirname, `../../${member.avatar}`);
+            const oldAvatarPath = path.join(__dirname, `../../../${member.avatar}`);
             if (fs.existsSync(oldAvatarPath)) {
                 fs.unlinkSync(oldAvatarPath);
             }
@@ -60,7 +60,7 @@ const uploadMemberAvatar = async (req, res) => {
         fs.writeFileSync(filePath, buffer);
 
         // 📌 Đường dẫn avatar mới
-        const avatarPath = `uploads/avatars/${userId}/${_id}/${newFileName}`;
+        const avatarPath = `uploads/totienta/avatars/${userId}/${_id}/${newFileName}`;
 
         // 📌 Cập nhật avatar vào database
         member.avatar = avatarPath;
@@ -84,7 +84,7 @@ const uploadAlbumPhoto = async (req, res) => {
         if (!member) return res.status(404).json({ message: 'Không tìm thấy thành viên' });
 
         const userId = req.user._id.toString();
-        const albumDir = path.join(__dirname, `../../uploads/albums/${userId}/${id}`);
+        const albumDir = path.join(__dirname, `../../../uploads/totienta/albums/${userId}/${id}`);
         if (!fs.existsSync(albumDir)) fs.mkdirSync(albumDir, { recursive: true });
 
         const fileName = `photo-${Date.now()}.jpg`;
@@ -95,7 +95,7 @@ const uploadAlbumPhoto = async (req, res) => {
 
         fs.writeFileSync(path.join(albumDir, fileName), buffer);
 
-        const photoPath = `uploads/albums/${userId}/${id}/${fileName}`;
+        const photoPath = `uploads/totienta/albums/${userId}/${id}/${fileName}`;
         if (!member.customFields) member.customFields = [];
         member.customFields.push({ label: '', type: 'image', value: photoPath });
         await member.save();
@@ -119,7 +119,7 @@ const deleteAlbumPhoto = async (req, res) => {
         if (!field || field.type !== 'image') return res.status(404).json({ message: 'Không tìm thấy ảnh' });
 
         if (field.value) {
-            const filePath = path.join(__dirname, `../../${field.value}`);
+            const filePath = path.join(__dirname, `../../../${field.value}`);
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         }
 
