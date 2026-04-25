@@ -106,7 +106,7 @@ const memberSchema = new mongoose.Schema(
         viewCode: { type: String, sparse: true },
         customFields: [
             {
-                label: { type: String, required: true },
+                label: { type: String, default: '' },
                 type: {
                     type: String,
                     enum: ['text', 'number', 'date', 'image', 'boolean'],

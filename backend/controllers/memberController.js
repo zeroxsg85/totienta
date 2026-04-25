@@ -102,7 +102,8 @@ const uploadAlbumPhoto = async (req, res) => {
 
         res.json({ customFields: member.customFields });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi upload ảnh album', error });
+        console.error('[uploadAlbumPhoto]', error);
+        res.status(500).json({ message: 'Lỗi khi upload ảnh album', error: error.message });
     }
 };
 
